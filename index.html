@@ -1135,6 +1135,9 @@
       </div>
       <div class="preference-panel" id="preferencePanel" aria-label="Favorite storage">
         <button class="action-button" id="folderButton" type="button">Choose folder</button>
+        <button class="action-button" id="exportButton" type="button">Export file</button>
+        <button class="action-button" id="importButton" type="button">Import file</button>
+        <input type="file" id="importFileInput" accept="application/json" hidden>
         <span class="status-pill" id="preferenceStatus">Favorites are not connected</span>
       </div>
     </header>
@@ -1319,6 +1322,9 @@
       summary: document.getElementById("summary"),
       timetable: document.getElementById("timetable"),
       folderButton: document.getElementById("folderButton"),
+      exportButton: document.getElementById("exportButton"),
+      importButton: document.getElementById("importButton"),
+      importFileInput: document.getElementById("importFileInput"),
       preferenceStatus: document.getElementById("preferenceStatus"),
       detailPopover: document.getElementById("detailPopover"),
       appHeader: document.querySelector(".app-header"),
@@ -1666,6 +1672,9 @@
         render();
       });
       dom.folderButton.addEventListener("click", chooseOrReconnectDirectory);
+      dom.exportButton.addEventListener("click", exportPreferencesToFile);
+      dom.importButton.addEventListener("click", () => dom.importFileInput.click());
+      dom.importFileInput.addEventListener("change", handleImportFileSelected);
       dom.timetable.addEventListener("click", handleTimetableClick);
       dom.timetable.addEventListener("pointerover", handlePointerOver);
       dom.timetable.addEventListener("pointerout", handlePointerOut);
@@ -2950,11 +2959,8 @@
       }, 180);
     }
 
-    async function savePreferencesNow() {
-      if (!state.fileHandle) {
-        return;
-      }
-      const payload = {
+    function buildPreferencesPayload() {
+      return {
         version: 1,
         eventId: state.event.id,
         eventName: state.event.name,
@@ -2964,12 +2970,60 @@
         hidden: [...state.hidden].sort((a, b) => a - b),
         planned: [...state.planned].sort((a, b) => a - b)
       };
+    }
+
+    async function savePreferencesNow() {
+      if (!state.fileHandle) {
+        return;
+      }
+      const payload = buildPreferencesPayload();
       const writable = await state.fileHandle.createWritable();
       await writable.write(JSON.stringify(payload, null, 2) + "\n");
       await writable.close();
       state.dirtyFavorites = false;
       state.saveMessage = "Saved to " + PREFS_FILE_NAME;
       updatePreferenceUi();
+    }
+
+    function exportPreferencesToFile() {
+      const payload = buildPreferencesPayload();
+      const blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = PREFS_FILE_NAME;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      state.saveMessage = "Exported " + PREFS_FILE_NAME;
+      updatePreferenceUi();
+    }
+
+    async function handleImportFileSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file) {
+        return;
+      }
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const toIdList = (value) => Array.isArray(value) ? value.map(Number).filter(Number.isFinite) : [];
+        state.favorites = new Set(toIdList(parsed.favorites).filter((id) => state.sessionById.has(id)));
+        state.booked = new Set(toIdList(parsed.booked).filter((id) => state.sessionById.has(id)));
+        state.hidden = new Set(toIdList(parsed.hidden).filter((id) => state.sessionById.has(id)));
+        state.planned = new Set(toIdList(parsed.planned).filter((id) => state.sessionById.has(id)));
+        state.saveMessage = "Imported " + file.name;
+        if (state.fileHandle) {
+          await savePreferencesNow();
+        }
+        updatePreferenceUi();
+        render();
+      } catch (error) {
+        state.saveMessage = "Import failed: " + error.message;
+        updatePreferenceUi();
+      }
     }
 
     async function restoreStoredDirectory() {
