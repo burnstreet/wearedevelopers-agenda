@@ -114,6 +114,37 @@ test.describe("mobile portrait (390x844)", () => {
     const border = await page.locator("#timetable").evaluate((el) => getComputedStyle(el).borderStyle);
     expect(border).toBe("none");
   });
+
+  test("tapping a card hides the details link and opens a full-screen overlay with directional navigation", async ({ page }) => {
+    await page.goto("/index.html");
+    await page.click("#hamburgerButton");
+    await page.uncheck("#favoritesOnly");
+    await page.click("#drawerCloseButton");
+    await page.waitForTimeout(200);
+
+    await expect(page.locator(".session-card .details-link").first()).toBeHidden();
+
+    const firstTitle = await page.locator(".session-card .session-title").first().textContent();
+    await page.locator(".session-card").first().click();
+    await expect(page.locator("#mobileDetailOverlay")).toHaveClass(/open/);
+    await expect(page.locator("#mobileDetailContent h2")).toHaveText(firstTitle || "");
+
+    // The official-app link must still be reachable from inside the overlay.
+    await expect(page.locator("#mobileDetailContent .details-link")).toHaveAttribute("href", /^https:\/\//);
+
+    // First card in its column: nothing above it, nothing to the left.
+    await expect(page.locator("#mobileDetailNavUp")).toBeDisabled();
+    await expect(page.locator("#mobileDetailNavLeft")).toBeDisabled();
+    await expect(page.locator("#mobileDetailNavDown")).toBeEnabled();
+
+    const downTitle = await page.evaluate(() => document.getElementById("mobileDetailNavDown").dataset.targetId);
+    await page.click("#mobileDetailNavDown");
+    await expect(page.locator("#mobileDetailContent h2")).not.toHaveText(firstTitle || "");
+    expect(downTitle).toBeTruthy();
+
+    await page.click("#mobileDetailCloseButton");
+    await expect(page.locator("#mobileDetailOverlay")).not.toHaveClass(/open/);
+  });
 });
 
 test.describe("mobile landscape (844x390)", () => {

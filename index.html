@@ -207,6 +207,90 @@
       font-size: 15px;
     }
 
+    .mobile-detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: none;
+      flex-direction: column;
+      background: var(--surface);
+    }
+
+    .mobile-detail-overlay.open {
+      display: flex;
+    }
+
+    .mobile-detail-head {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mobile-detail-content {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 16px;
+    }
+
+    .mobile-detail-content h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .mobile-detail-content .detail-line {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .mobile-detail-content .description {
+      margin: 14px 0;
+      color: #2c2c2c;
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .mobile-detail-external-link {
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    .mobile-detail-nav {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 6px;
+      justify-content: center;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .mobile-detail-nav .nav-up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .mobile-detail-nav .nav-left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .mobile-detail-nav .nav-down {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .mobile-detail-nav .nav-right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
     .toolbar {
       flex: 0 0 auto;
       display: grid;
@@ -793,6 +877,14 @@
         display: none;
       }
 
+      .session-card .details-link {
+        display: none;
+      }
+
+      .session-card {
+        cursor: pointer;
+      }
+
       .app-shell {
         padding: 6px;
         gap: 6px;
@@ -913,6 +1005,19 @@
 
   <div class="detail-popover" id="detailPopover" role="dialog" aria-label="Session details"></div>
 
+  <div class="mobile-detail-overlay" id="mobileDetailOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Session details">
+    <div class="mobile-detail-head">
+      <button class="icon-button" id="mobileDetailCloseButton" type="button" aria-label="Close details">✕</button>
+    </div>
+    <div class="mobile-detail-content" id="mobileDetailContent"></div>
+    <div class="mobile-detail-nav">
+      <button class="icon-button nav-up" id="mobileDetailNavUp" type="button" aria-label="Previous session in this column">▲</button>
+      <button class="icon-button nav-left" id="mobileDetailNavLeft" type="button" aria-label="Nearest session in the column to the left">◀</button>
+      <button class="icon-button nav-down" id="mobileDetailNavDown" type="button" aria-label="Next session in this column">▼</button>
+      <button class="icon-button nav-right" id="mobileDetailNavRight" type="button" aria-label="Nearest session in the column to the right">▶</button>
+    </div>
+  </div>
+
   <script>
     const AGENDA_URL = "16.json";
     const EVENT_TIME_ZONE = "Europe/Berlin";
@@ -984,7 +1089,10 @@
       dirtyFavorites: false,
       hoverCard: null,
       isMobile: false,
-      autoScrollToNowPending: false
+      autoScrollToNowPending: false,
+      navColumns: [],
+      navIndexById: new Map(),
+      detailSessionId: null
     };
 
     const dom = {
@@ -1013,7 +1121,14 @@
       drawerBackdrop: document.getElementById("drawerBackdrop"),
       mobileDrawer: document.getElementById("mobileDrawer"),
       drawerCloseButton: document.getElementById("drawerCloseButton"),
-      drawerContent: document.getElementById("drawerContent")
+      drawerContent: document.getElementById("drawerContent"),
+      mobileDetailOverlay: document.getElementById("mobileDetailOverlay"),
+      mobileDetailCloseButton: document.getElementById("mobileDetailCloseButton"),
+      mobileDetailContent: document.getElementById("mobileDetailContent"),
+      mobileDetailNavUp: document.getElementById("mobileDetailNavUp"),
+      mobileDetailNavDown: document.getElementById("mobileDetailNavDown"),
+      mobileDetailNavLeft: document.getElementById("mobileDetailNavLeft"),
+      mobileDetailNavRight: document.getElementById("mobileDetailNavRight")
     };
 
     init();
@@ -1333,6 +1448,28 @@
       dom.drawerBackdrop.addEventListener("click", closeDrawer);
       dom.scrollLeftButton.addEventListener("click", () => scrollByOneColumn(-1));
       dom.scrollRightButton.addEventListener("click", () => scrollByOneColumn(1));
+
+      dom.mobileDetailCloseButton.addEventListener("click", closeMobileDetail);
+      dom.mobileDetailNavUp.addEventListener("click", () => navigateMobileDetail("up"));
+      dom.mobileDetailNavDown.addEventListener("click", () => navigateMobileDetail("down"));
+      dom.mobileDetailNavLeft.addEventListener("click", () => navigateMobileDetail("left"));
+      dom.mobileDetailNavRight.addEventListener("click", () => navigateMobileDetail("right"));
+      window.addEventListener("keydown", (event) => {
+        if (!dom.mobileDetailOverlay.classList.contains("open")) {
+          return;
+        }
+        if (event.key === "Escape") {
+          closeMobileDetail();
+        } else if (event.key === "ArrowUp") {
+          navigateMobileDetail("up");
+        } else if (event.key === "ArrowDown") {
+          navigateMobileDetail("down");
+        } else if (event.key === "ArrowLeft") {
+          navigateMobileDetail("left");
+        } else if (event.key === "ArrowRight") {
+          navigateMobileDetail("right");
+        }
+      });
     }
 
     function setupResponsiveLayout() {
@@ -1413,6 +1550,8 @@
 
       if (filteredSessions.length === 0) {
         state.columnBoundaries = [];
+        state.navColumns = [];
+        state.navIndexById = new Map();
         renderEmptyState(daySessions.length === 0 ? "No agenda items for this day." : "No agenda items match the current filters.");
         return;
       }
@@ -1475,6 +1614,7 @@
       bounds.toPixel = scale.toPixel;
       bounds.totalHeight = scale.totalHeight;
       finalizeColumnPositions(columns, bounds);
+      indexColumnsForNavigation(columns);
 
       const grid = document.createElement("div");
       grid.className = "timeline-grid";
@@ -1578,6 +1718,19 @@
     function mobileBaseColumnWidth() {
       const available = (dom.timetable.clientWidth || 360) - MOBILE_RAIL_WIDTH;
       return Math.max(MOBILE_MIN_COLUMN_WIDTH, Math.floor(available / MOBILE_TARGET_COLUMNS));
+    }
+
+    // Drives the mobile detail overlay's up/down/left/right navigation:
+    // up/down step through a column chronologically, left/right jump to the
+    // closest-by-start-time session in the neighboring column.
+    function indexColumnsForNavigation(columns) {
+      state.navColumns = columns.map((column) => column.sessions);
+      state.navIndexById = new Map();
+      columns.forEach((column, colIndex) => {
+        column.sessions.forEach((session, rowIndex) => {
+          state.navIndexById.set(session.id, { colIndex, rowIndex });
+        });
+      });
     }
 
     // The timeline's minutes-to-pixels mapping is shared by every column (they
@@ -1778,6 +1931,8 @@
     }
 
     function renderListView(sessions) {
+      indexColumnsForNavigation([{ sessions }]);
+
       const list = document.createElement("div");
       list.className = "list-view";
       const groups = new Map();
@@ -1895,12 +2050,20 @@
 
     function handleTimetableClick(event) {
       const button = event.target.closest("[data-favorite-id]");
-      if (!button) {
+      if (button) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFavorite(Number(button.dataset.favoriteId));
         return;
       }
-      event.preventDefault();
-      event.stopPropagation();
-      toggleFavorite(Number(button.dataset.favoriteId));
+
+      if (!state.isMobile) {
+        return;
+      }
+      const card = event.target.closest(".session-card");
+      if (card) {
+        openMobileDetail(Number(card.dataset.sessionId));
+      }
     }
 
     function toggleFavorite(sessionId) {
@@ -1915,7 +2078,7 @@
     }
 
     function isDesktopHover() {
-      return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      return !state.isMobile && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     }
 
     function handlePointerOver(event) {
@@ -1998,6 +2161,113 @@
       line.className = "detail-line";
       line.textContent = text;
       return line;
+    }
+
+    function openMobileDetail(sessionId) {
+      const session = state.sessionById.get(sessionId);
+      if (!session) {
+        return;
+      }
+      state.detailSessionId = sessionId;
+      renderMobileDetailContent(session);
+      updateMobileDetailNav(sessionId);
+      dom.mobileDetailOverlay.classList.add("open");
+      dom.mobileDetailOverlay.setAttribute("aria-hidden", "false");
+      dom.mobileDetailContent.scrollTop = 0;
+    }
+
+    function closeMobileDetail() {
+      dom.mobileDetailOverlay.classList.remove("open");
+      dom.mobileDetailOverlay.setAttribute("aria-hidden", "true");
+      state.detailSessionId = null;
+    }
+
+    function renderMobileDetailContent(session) {
+      dom.mobileDetailContent.replaceChildren();
+
+      const title = document.createElement("h2");
+      title.textContent = session.title;
+
+      const time = detailLine(session.timeLabel + " · " + session.typeLabel);
+      const place = detailLine(session.stageName + " · " + session.trackName);
+      const speakers = detailLine(session.speakerNames.length > 0 ? session.speakerNames.join(", ") : "No speakers listed");
+
+      const description = document.createElement("p");
+      description.className = "description";
+      description.textContent = session.description.trim() || "No description provided.";
+
+      dom.mobileDetailContent.append(title, time, place, speakers, description);
+
+      if (session.tags.length > 0 || session.liveCoding) {
+        const tags = document.createElement("div");
+        tags.className = "tag-list";
+        const values = session.liveCoding ? ["Live coding", ...session.tags] : session.tags;
+        for (const tag of values.slice(0, 14)) {
+          const item = document.createElement("span");
+          item.textContent = tag;
+          tags.append(item);
+        }
+        dom.mobileDetailContent.append(tags);
+      }
+
+      const externalLink = document.createElement("a");
+      externalLink.className = "details-link mobile-detail-external-link";
+      externalLink.href = session.detailsUrl;
+      externalLink.target = "_blank";
+      externalLink.rel = "noreferrer";
+      externalLink.textContent = "Open in official app";
+      dom.mobileDetailContent.append(externalLink);
+    }
+
+    function updateMobileDetailNav(sessionId) {
+      const position = state.navIndexById.get(sessionId);
+      setNavButton(dom.mobileDetailNavUp, position ? findVerticalNeighbor(position, -1) : null);
+      setNavButton(dom.mobileDetailNavDown, position ? findVerticalNeighbor(position, 1) : null);
+      setNavButton(dom.mobileDetailNavLeft, position ? findHorizontalNeighbor(position, -1) : null);
+      setNavButton(dom.mobileDetailNavRight, position ? findHorizontalNeighbor(position, 1) : null);
+    }
+
+    function setNavButton(button, targetSession) {
+      button.disabled = !targetSession;
+      button.dataset.targetId = targetSession ? String(targetSession.id) : "";
+    }
+
+    function navigateMobileDetail(direction) {
+      const button = direction === "up" ? dom.mobileDetailNavUp
+        : direction === "down" ? dom.mobileDetailNavDown
+        : direction === "left" ? dom.mobileDetailNavLeft
+        : dom.mobileDetailNavRight;
+      if (button.disabled || !button.dataset.targetId) {
+        return;
+      }
+      openMobileDetail(Number(button.dataset.targetId));
+    }
+
+    function findVerticalNeighbor(position, delta) {
+      const column = state.navColumns[position.colIndex];
+      return (column && column[position.rowIndex + delta]) || null;
+    }
+
+    // Same-time match (overlapping start/end), not "closest start" — and
+    // keeps stepping past columns with nothing on at that time.
+    function findHorizontalNeighbor(position, delta) {
+      const column = state.navColumns[position.colIndex];
+      if (!column) {
+        return null;
+      }
+      const currentSession = column[position.rowIndex];
+
+      for (let colIndex = position.colIndex + delta; colIndex >= 0 && colIndex < state.navColumns.length; colIndex += delta) {
+        const candidates = state.navColumns[colIndex].filter((session) =>
+          session.startMinute < currentSession.endMinute && session.endMinute > currentSession.startMinute
+        );
+        if (candidates.length === 0) {
+          continue;
+        }
+        candidates.sort((a, b) => Math.abs(a.startMinute - currentSession.startMinute) - Math.abs(b.startMinute - currentSession.startMinute));
+        return candidates[0];
+      }
+      return null;
     }
 
     function positionPopover(card) {
