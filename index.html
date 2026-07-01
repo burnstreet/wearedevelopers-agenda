@@ -487,13 +487,14 @@
     .lane {
       position: relative;
       min-height: var(--timeline-height);
-      background-image: repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent calc(var(--tick-size) - 1px),
-        rgba(222, 217, 207, 0.9) calc(var(--tick-size) - 1px),
-        rgba(222, 217, 207, 0.9) var(--tick-size)
-      );
+    }
+
+    .tick-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(222, 217, 207, 0.9);
     }
 
     .time-rail {
@@ -789,7 +790,7 @@
       z-index: 30;
       display: none;
       width: min(420px, calc(100vw - 24px));
-      max-height: min(620px, calc(100vh - 24px));
+      max-height: calc(100vh - 24px);
       overflow: auto;
       border: 1px solid #b9b0a3;
       border-radius: var(--radius);
@@ -1094,6 +1095,7 @@
     const MOBILE_TARGET_COLUMNS = 3;
     const MOBILE_MIN_COLUMN_WIDTH = 108;
     const MOBILE_RAIL_WIDTH = 30;
+    const MIN_BOOKED_WORKSHOPS_TO_HIDE_OTHERS = 2;
 
     const typeLabels = new Map([
       [9, "Talk"],
@@ -1699,7 +1701,7 @@
           if (state.hidden.has(session.id)) {
             return false;
           }
-          if (session.typeKey === "Workshop" && state.booked.size > 0 && !state.booked.has(session.id)) {
+          if (session.typeKey === "Workshop" && state.booked.size >= MIN_BOOKED_WORKSHOPS_TO_HIDE_OTHERS && !state.booked.has(session.id)) {
             return false;
           }
         }
@@ -1721,7 +1723,6 @@
       const grid = document.createElement("div");
       grid.className = "timeline-grid";
       grid.style.setProperty("--timeline-height", bounds.totalHeight + "px");
-      grid.style.setProperty("--tick-size", ((bounds.totalHeight / bounds.duration) * TICK_MINUTES) + "px");
       grid.style.gridTemplateColumns = "var(--rail) " + columns.map((column) => column.width + "px").join(" ");
 
       const corner = document.createElement("div");
@@ -1747,6 +1748,7 @@
       rail.className = "time-rail";
       rail.style.gridColumn = "1";
       rail.style.gridRow = "2";
+      addGridLines(rail, bounds);
       addTimeLabels(rail, bounds);
       grid.append(rail);
 
@@ -1755,6 +1757,7 @@
         lane.className = "lane";
         lane.style.gridColumn = String(index + 2);
         lane.style.gridRow = "2";
+        addGridLines(lane, bounds);
         for (const layout of column.layouts) {
           lane.append(createSessionCard(layout.session, layout, "grid", bounds));
         }
@@ -1946,6 +1949,19 @@
       }
     }
 
+    // Drawn from the same non-linear bounds.toPixel() mapping used to
+    // position every card, so the gridlines always line up with them —
+    // a uniform CSS tick pattern would drift once the timeline stretches
+    // unevenly to fit densely packed spans.
+    function addGridLines(container, bounds) {
+      for (let minute = bounds.start; minute <= bounds.end; minute += TICK_MINUTES) {
+        const line = document.createElement("div");
+        line.className = "tick-line";
+        line.style.top = bounds.toPixel(minute) + "px";
+        container.append(line);
+      }
+    }
+
     // Lane assignment only ever looks at real session times — never at the
     // rendered card height — so back-to-back (non-overlapping) sessions stay
     // in a single full-width lane. Tightness is instead resolved by growing
@@ -2064,6 +2080,16 @@
       dom.timetable.replaceChildren(list);
     }
 
+    // Only clamp the title down as far as the card's own height forces —
+    // a two-hour workshop card has plenty of room and shouldn't truncate
+    // a title that would otherwise fit in full.
+    function titleLineClampFor(cardHeight) {
+      const reservedForOtherRows = 88;
+      const lineHeightPx = 16;
+      const available = cardHeight - reservedForOtherRows;
+      return Math.max(2, Math.min(12, Math.floor(available / lineHeightPx)));
+    }
+
     function createSessionCard(session, layout, mode, bounds) {
       const article = document.createElement("article");
       article.className = "session-card " + session.typeClass
@@ -2123,6 +2149,9 @@
       const title = document.createElement("h3");
       title.className = "session-title";
       title.textContent = session.title;
+      if (mode === "grid" && layout) {
+        title.style.webkitLineClamp = String(titleLineClampFor(layout.height));
+      }
 
       const meta = document.createElement("div");
       meta.className = "card-meta";

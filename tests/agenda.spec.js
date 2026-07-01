@@ -195,17 +195,29 @@ test("reset filters clears all filter selections", async ({ page }) => {
   await expect(page.locator("#favoritesOnly")).not.toBeChecked();
 });
 
-test("booking a workshop auto-favorites it and hides other unbooked workshops by default", async ({ page }) => {
+test("booking one workshop auto-favorites it but does not hide the others yet", async ({ page }) => {
   await page.goto("/index.html");
   await page.selectOption("#typeFilter", { label: "Workshop" });
   const before = await page.locator(".session-card").count();
-  expect(before).toBeGreaterThan(1);
+  expect(before).toBeGreaterThan(2);
 
   const firstCard = page.locator(".session-card").first();
   await firstCard.locator("[data-booked-id]").click();
 
-  await expect(page.locator(".session-card")).toHaveCount(1);
+  await expect(page.locator(".session-card")).toHaveCount(before);
   await expect(firstCard.locator(".favorite-button")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("booking a second workshop hides all other unbooked workshops by default", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.selectOption("#typeFilter", { label: "Workshop" });
+  const before = await page.locator(".session-card").count();
+  expect(before).toBeGreaterThan(2);
+
+  await page.locator(".session-card").nth(0).locator("[data-booked-id]").click();
+  await page.locator(".session-card").nth(1).locator("[data-booked-id]").click();
+
+  await expect(page.locator(".session-card")).toHaveCount(2);
 
   await page.locator("#showHidden").check();
   await expect(page.locator(".session-card")).toHaveCount(before);
