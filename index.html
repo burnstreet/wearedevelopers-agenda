@@ -122,6 +122,91 @@
       line-height: 1.25;
     }
 
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--surface);
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .icon-button:hover {
+      border-color: var(--accent);
+    }
+
+    .mobile-topbar {
+      display: none;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(251, 250, 247, 0.96);
+    }
+
+    .mobile-summary {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.3;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(20, 18, 15, 0.45);
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 21;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: min(340px, 88vw);
+      padding: 14px;
+      overflow: auto;
+      background: var(--bg);
+      box-shadow: var(--shadow);
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+    }
+
+    .mobile-drawer.open,
+    .drawer-backdrop.open {
+      display: block;
+    }
+
+    .mobile-drawer.open {
+      display: flex;
+      transform: translateX(0);
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 15px;
+    }
+
     .toolbar {
       flex: 0 0 auto;
       display: grid;
@@ -180,7 +265,8 @@
       border-color: var(--accent);
     }
 
-    .action-button:disabled {
+    .action-button:disabled,
+    .icon-button:disabled {
       cursor: not-allowed;
       opacity: 0.56;
     }
@@ -683,10 +769,94 @@
         font-size: 12px;
       }
     }
+
+    #mobileDrawer .filters {
+      grid-template-columns: 1fr;
+    }
+
+    #mobileDrawer .segmented {
+      width: 100%;
+    }
+
+    #mobileDrawer .segmented button {
+      flex: 1 1 auto;
+    }
+
+    #mobileDrawer .preference-panel {
+      justify-content: flex-start;
+      min-width: 0;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 960px) {
+      .app-header {
+        display: none;
+      }
+
+      .app-shell {
+        padding: 6px;
+        gap: 6px;
+      }
+
+      .mobile-topbar {
+        display: flex;
+        margin-bottom: 0;
+        padding: 0;
+        border: none;
+        background: none;
+      }
+
+      .icon-button {
+        width: 34px;
+        height: 34px;
+      }
+
+      .summary {
+        display: none;
+      }
+
+      .timetable {
+        border: none;
+        border-radius: 0;
+      }
+
+      .empty-state,
+      .load-error {
+        border: none;
+      }
+
+      :root {
+        --rail: 30px;
+      }
+
+      .time-label {
+        left: 0;
+        right: 0;
+        width: var(--rail);
+        text-align: center;
+        transform: translateY(-50%) rotate(-90deg);
+      }
+
+      .column-header {
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+
+      .column-header small {
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="app-shell">
+    <div class="mobile-topbar" id="mobileTopbar">
+      <button class="icon-button" id="hamburgerButton" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+      <button class="icon-button" id="scrollLeftButton" type="button" aria-label="Scroll one column left">‹</button>
+      <div class="mobile-summary" id="mobileSummary"></div>
+      <button class="icon-button" id="scrollRightButton" type="button" aria-label="Scroll one column right">›</button>
+    </div>
+
     <header class="app-header">
       <div>
         <p class="eyebrow">World Congress 2026 Berlin</p>
@@ -696,13 +866,13 @@
           <span id="eventStats"></span>
         </div>
       </div>
-      <div class="preference-panel" aria-label="Favorite storage">
+      <div class="preference-panel" id="preferencePanel" aria-label="Favorite storage">
         <button class="action-button" id="folderButton" type="button">Choose folder</button>
         <span class="status-pill" id="preferenceStatus">Favorites are not connected</span>
       </div>
     </header>
 
-    <section class="toolbar" aria-label="Agenda controls">
+    <section class="toolbar" id="toolbarPanel" aria-label="Agenda controls">
       <div class="control-row">
         <div class="segmented" id="dayTabs" aria-label="Day"></div>
         <div class="segmented" id="viewTabs" aria-label="View"></div>
@@ -732,6 +902,15 @@
     <main class="timetable" id="timetable"></main>
   </div>
 
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="mobile-drawer" id="mobileDrawer" aria-label="Agenda menu" aria-hidden="true">
+    <div class="drawer-head">
+      <strong>Menu</strong>
+      <button class="icon-button" id="drawerCloseButton" type="button" aria-label="Close menu">✕</button>
+    </div>
+    <div id="drawerContent"></div>
+  </aside>
+
   <div class="detail-popover" id="detailPopover" role="dialog" aria-label="Session details"></div>
 
   <script>
@@ -743,6 +922,10 @@
     const TICK_MINUTES = 30;
     const DEFAULT_START_MINUTE = 9 * 60;
     const DEFAULT_END_MINUTE = 18 * 60;
+    const MOBILE_BREAKPOINT_QUERY = "(max-width: 960px)";
+    const MOBILE_TARGET_COLUMNS = 3;
+    const MOBILE_MIN_COLUMN_WIDTH = 108;
+    const MOBILE_RAIL_WIDTH = 30;
 
     const typeLabels = new Map([
       [9, "Talk"],
@@ -799,7 +982,9 @@
       saveTimer: null,
       saveMessage: "Favorites are not connected",
       dirtyFavorites: false,
-      hoverCard: null
+      hoverCard: null,
+      isMobile: false,
+      autoScrollToNowPending: false
     };
 
     const dom = {
@@ -816,7 +1001,19 @@
       timetable: document.getElementById("timetable"),
       folderButton: document.getElementById("folderButton"),
       preferenceStatus: document.getElementById("preferenceStatus"),
-      detailPopover: document.getElementById("detailPopover")
+      detailPopover: document.getElementById("detailPopover"),
+      appHeader: document.querySelector(".app-header"),
+      toolbarPanel: document.getElementById("toolbarPanel"),
+      preferencePanel: document.getElementById("preferencePanel"),
+      mobileTopbar: document.getElementById("mobileTopbar"),
+      mobileSummary: document.getElementById("mobileSummary"),
+      hamburgerButton: document.getElementById("hamburgerButton"),
+      scrollLeftButton: document.getElementById("scrollLeftButton"),
+      scrollRightButton: document.getElementById("scrollRightButton"),
+      drawerBackdrop: document.getElementById("drawerBackdrop"),
+      mobileDrawer: document.getElementById("mobileDrawer"),
+      drawerCloseButton: document.getElementById("drawerCloseButton"),
+      drawerContent: document.getElementById("drawerContent")
     };
 
     init();
@@ -833,12 +1030,18 @@
         state.sessionById = new Map(state.sessions.map((session) => [session.id, session]));
         state.eventDayKeys = getEventDayKeys();
         state.selectedDayKey = pickInitialDay();
+        state.isMobile = window.matchMedia(MOBILE_BREAKPOINT_QUERY).matches;
+        if (state.isMobile) {
+          state.filters.favoritesOnly = true;
+          state.autoScrollToNowPending = state.selectedDayKey === todayKey();
+        }
 
         renderHeader();
         renderDayTabs();
         renderViewTabs();
         populateFilters();
         bindEvents();
+        setupResponsiveLayout();
         updatePreferenceUi();
         render();
         restoreStoredDirectory()
@@ -995,6 +1198,7 @@
         state.selectedDayKey = today;
         renderDayTabs();
         render();
+        closeDrawerIfMobile();
       });
       dom.dayTabs.append(todayButton);
 
@@ -1004,8 +1208,15 @@
           state.selectedDayKey = key;
           renderDayTabs();
           render();
+          closeDrawerIfMobile();
         });
         dom.dayTabs.append(button);
+      }
+    }
+
+    function closeDrawerIfMobile() {
+      if (state.isMobile) {
+        closeDrawer();
       }
     }
 
@@ -1021,6 +1232,7 @@
           state.view = key;
           renderViewTabs();
           render();
+          closeDrawerIfMobile();
         }));
       }
     }
@@ -1115,6 +1327,58 @@
       dom.timetable.addEventListener("focusout", handleFocusOut);
       window.addEventListener("scroll", hidePopover, { passive: true });
       window.addEventListener("resize", hidePopover);
+
+      dom.hamburgerButton.addEventListener("click", openDrawer);
+      dom.drawerCloseButton.addEventListener("click", closeDrawer);
+      dom.drawerBackdrop.addEventListener("click", closeDrawer);
+      dom.scrollLeftButton.addEventListener("click", () => scrollByOneColumn(-1));
+      dom.scrollRightButton.addEventListener("click", () => scrollByOneColumn(1));
+    }
+
+    function setupResponsiveLayout() {
+      const query = window.matchMedia(MOBILE_BREAKPOINT_QUERY);
+      applyResponsiveLayout(query.matches);
+      query.addEventListener("change", (event) => {
+        applyResponsiveLayout(event.matches);
+        render();
+      });
+    }
+
+    function applyResponsiveLayout(isMobile) {
+      state.isMobile = isMobile;
+      if (isMobile) {
+        dom.drawerContent.append(dom.toolbarPanel, dom.preferencePanel);
+      } else {
+        closeDrawer();
+        dom.appHeader.append(dom.preferencePanel);
+        dom.appHeader.after(dom.toolbarPanel);
+      }
+    }
+
+    function openDrawer() {
+      dom.mobileDrawer.classList.add("open");
+      dom.drawerBackdrop.classList.add("open");
+      dom.mobileDrawer.setAttribute("aria-hidden", "false");
+      dom.hamburgerButton.setAttribute("aria-expanded", "true");
+    }
+
+    function closeDrawer() {
+      dom.mobileDrawer.classList.remove("open");
+      dom.drawerBackdrop.classList.remove("open");
+      dom.mobileDrawer.setAttribute("aria-hidden", "true");
+      dom.hamburgerButton.setAttribute("aria-expanded", "false");
+    }
+
+    function scrollByOneColumn(direction) {
+      const boundaries = state.columnBoundaries || [];
+      const current = dom.timetable.scrollLeft;
+      let target = current;
+      if (direction > 0) {
+        target = boundaries.find((value) => value > current + 1) ?? current;
+      } else {
+        target = [...boundaries].reverse().find((value) => value < current - 1) ?? 0;
+      }
+      dom.timetable.scrollTo({ left: target, behavior: "smooth" });
     }
 
     function syncFilterControls() {
@@ -1128,6 +1392,7 @@
       hidePopover();
       syncFilterControls();
       updatePreferenceUi();
+      renderMobileSummary();
 
       const daySessions = getSessionsForSelectedDay();
       const filteredSessions = applyFilters(daySessions);
@@ -1142,16 +1407,41 @@
       right.textContent = favoriteCount + " favorite" + (favoriteCount === 1 ? "" : "s");
       dom.summary.append(left, right);
 
+      const isColumnView = state.view !== "list";
+      dom.scrollLeftButton.disabled = !isColumnView;
+      dom.scrollRightButton.disabled = !isColumnView;
+
       if (filteredSessions.length === 0) {
+        state.columnBoundaries = [];
         renderEmptyState(daySessions.length === 0 ? "No agenda items for this day." : "No agenda items match the current filters.");
         return;
       }
 
       if (state.view === "list") {
+        state.columnBoundaries = [];
         renderListView(filteredSessions);
       } else {
         renderColumnView(filteredSessions, daySessions, state.view);
       }
+    }
+
+    function renderMobileSummary() {
+      const dayLabel = state.selectedDayKey === todayKey() ? "Today" : dayLabelFormatter.format(dateFromKey(state.selectedDayKey));
+      const viewLabel = state.view === "stage" ? "Stages" : state.view === "track" ? "Tracks" : "One column";
+      const parts = [dayLabel, viewLabel];
+      if (state.filters.type !== "all") {
+        parts.push(state.filters.type);
+      }
+      if (state.filters.stage !== "all") {
+        parts.push(state.filters.stage);
+      }
+      if (state.filters.track !== "all") {
+        parts.push(state.filters.track);
+      }
+      if (state.filters.favoritesOnly) {
+        parts.push("★ Favorites");
+      }
+      dom.mobileSummary.textContent = parts.join(" · ");
     }
 
     function getSessionsForSelectedDay() {
@@ -1230,6 +1520,26 @@
       });
 
       dom.timetable.replaceChildren(grid);
+
+      let boundary = 0;
+      state.columnBoundaries = [0, ...columns.map((column) => (boundary += column.width))];
+
+      if (state.autoScrollToNowPending) {
+        state.autoScrollToNowPending = false;
+        scrollToNow(bounds);
+      }
+    }
+
+    function scrollToNow(bounds) {
+      if (state.selectedDayKey !== todayKey()) {
+        return;
+      }
+      const nowMinute = minuteOfDay(new Date());
+      if (nowMinute < bounds.start || nowMinute > bounds.end) {
+        return;
+      }
+      const target = bounds.toPixel(nowMinute) - 80;
+      dom.timetable.scrollTop = Math.max(0, target);
     }
 
     function buildColumns(sessions, groupKey, sortKey) {
@@ -1256,9 +1566,18 @@
         column.sessions.sort(sortByTime);
         column.layouts = layoutColumnSessions(column.sessions);
         column.maxLanes = column.layouts.reduce((max, layout) => Math.max(max, layout.laneCount), 1);
-        column.width = Math.max(250, Math.min(1480, column.maxLanes * 178));
+        column.width = state.isMobile
+          ? Math.max(MOBILE_MIN_COLUMN_WIDTH, column.maxLanes * mobileBaseColumnWidth())
+          : Math.max(250, Math.min(1480, column.maxLanes * 178));
         return column;
       });
+    }
+
+    // Best-effort target of MOBILE_TARGET_COLUMNS visible at once; columns
+    // needing multiple lanes are wider (readability wins over the target).
+    function mobileBaseColumnWidth() {
+      const available = (dom.timetable.clientWidth || 360) - MOBILE_RAIL_WIDTH;
+      return Math.max(MOBILE_MIN_COLUMN_WIDTH, Math.floor(available / MOBILE_TARGET_COLUMNS));
     }
 
     // The timeline's minutes-to-pixels mapping is shared by every column (they
