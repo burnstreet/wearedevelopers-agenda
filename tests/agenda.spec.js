@@ -242,3 +242,97 @@ test("manually hiding a session removes it, and Show hidden reveals it again dim
   await page.locator("#showHidden").uncheck();
   await expect(page.locator(".session-card")).toHaveCount(before);
 });
+
+test("planning a session auto-favorites it", async ({ page }) => {
+  await page.goto("/index.html");
+  const card = page.locator(".session-card").first();
+  await card.locator("[data-planned-id]").click();
+  await expect(card.locator("[data-planned-id]")).toHaveAttribute("aria-pressed", "true");
+  await expect(card.locator(".favorite-button")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("planning a session auto-unplans another planned session with the exact same start time", async ({ page }) => {
+  await page.goto("/index.html");
+  const pair = await page.evaluate(() => {
+    const byStart = new Map();
+    for (const s of state.sessions) {
+      if (s.dayKey !== state.selectedDayKey || s.typeKey === "Workshop") continue;
+      (byStart.get(s.startMinute) || byStart.set(s.startMinute, []).get(s.startMinute)).push(s);
+    }
+    for (const group of byStart.values()) {
+      if (group.length >= 2) return [group[0].id, group[1].id];
+    }
+    return null;
+  });
+  expect(pair).not.toBeNull();
+
+  const [firstId, secondId] = pair;
+  const firstButton = page.locator(`.session-card[data-session-id="${firstId}"] [data-planned-id]`).first();
+  const secondButton = page.locator(`.session-card[data-session-id="${secondId}"] [data-planned-id]`).first();
+
+  await firstButton.click();
+  await expect(firstButton).toHaveAttribute("aria-pressed", "true");
+
+  await secondButton.click();
+  await expect(secondButton).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(`.session-card[data-session-id="${firstId}"] [data-planned-id]`).first()).toHaveAttribute("aria-pressed", "false");
+});
+
+test("planning a session that overlaps a different-start planned session opens a resolve-conflicts overlay", async ({ page }) => {
+  await page.goto("/index.html");
+  const pair = await page.evaluate(() => {
+    const daySessions = state.sessions.filter((s) => s.dayKey === state.selectedDayKey && s.typeKey !== "Workshop");
+    for (const a of daySessions) {
+      for (const b of daySessions) {
+        if (a.id === b.id || a.startMinute === b.startMinute) continue;
+        if (a.startMinute < b.endMinute && a.endMinute > b.startMinute) {
+          return [a.id, b.id, a.title];
+        }
+      }
+    }
+    return null;
+  });
+  expect(pair).not.toBeNull();
+  const [firstId, secondId, firstTitle] = pair;
+
+  await page.locator(`.session-card[data-session-id="${firstId}"] [data-planned-id]`).first().click();
+  await page.locator(`.session-card[data-session-id="${secondId}"] [data-planned-id]`).first().click();
+
+  await expect(page.locator("#conflictOverlay")).toHaveClass(/open/);
+  await expect(page.locator(".conflict-item-title")).toHaveText(firstTitle);
+
+  // Both remain planned until the user resolves it manually.
+  await expect(page.locator(`.session-card[data-session-id="${firstId}"] [data-planned-id]`).first()).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator(".conflict-item .action-button").click();
+  await expect(page.locator("#conflictOverlay")).not.toHaveClass(/open/);
+  await expect(page.locator(`.session-card[data-session-id="${firstId}"] [data-planned-id]`).first()).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(`.session-card[data-session-id="${secondId}"] [data-planned-id]`).first()).toHaveAttribute("aria-pressed", "true");
+});
+
+test("booking a workshop that overlaps a planned session never offers the workshop for removal", async ({ page }) => {
+  await page.goto("/index.html");
+  const pair = await page.evaluate(() => {
+    const daySessions = state.sessions.filter((s) => s.dayKey === state.selectedDayKey);
+    const workshops = daySessions.filter((s) => s.typeKey === "Workshop");
+    const others = daySessions.filter((s) => s.typeKey !== "Workshop");
+    for (const w of workshops) {
+      for (const o of others) {
+        if (w.startMinute < o.endMinute && w.endMinute > o.startMinute) {
+          return [w.id, o.id];
+        }
+      }
+    }
+    return null;
+  });
+  expect(pair).not.toBeNull();
+  const [workshopId, otherId] = pair;
+
+  await page.locator(`.session-card[data-session-id="${otherId}"] [data-planned-id]`).first().click();
+  await page.locator(`.session-card[data-session-id="${workshopId}"] [data-booked-id]`).first().click();
+
+  await expect(page.locator("#conflictOverlay")).toHaveClass(/open/);
+  const listedIds = await page.evaluate(() => [...document.querySelectorAll(".conflict-item")].length);
+  expect(listedIds).toBe(1);
+  await expect(page.locator(`.session-card[data-session-id="${workshopId}"] [data-planned-id]`).first()).toHaveAttribute("aria-pressed", "true");
+});

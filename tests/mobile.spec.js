@@ -21,10 +21,11 @@ test.describe("mobile portrait (390x844)", () => {
     expect(toolbarBox.x + toolbarBox.width).toBeLessThanOrEqual(0);
   });
 
-  test("defaults to favorites-only on first mobile load", async ({ page }) => {
+  test("defaults to planned-only on first mobile load", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await expect(page.locator("#favoritesOnly")).toBeChecked();
+    await expect(page.locator("#plannedOnly")).toBeChecked();
+    await expect(page.locator("#favoritesOnly")).not.toBeChecked();
   });
 
   test("hamburger opens a drawer containing day tabs, view tabs, and filters; close button closes it", async ({ page }) => {
@@ -42,7 +43,7 @@ test.describe("mobile portrait (390x844)", () => {
   test("scroll-right/left buttons page the timetable by exactly one column", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#drawerCloseButton");
     await page.waitForTimeout(200);
 
@@ -63,7 +64,7 @@ test.describe("mobile portrait (390x844)", () => {
   test("scroll buttons are disabled in one-column (list) view", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#viewTabs button:has-text('One column')");
     await expect(page.locator("#scrollLeftButton")).toBeDisabled();
     await expect(page.locator("#scrollRightButton")).toBeDisabled();
@@ -72,7 +73,7 @@ test.describe("mobile portrait (390x844)", () => {
   test("tries to fit at least 3 columns on screen in stage view", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#drawerCloseButton");
     await page.waitForTimeout(200);
     const visibleColumns = await page.evaluate(() => {
@@ -87,7 +88,7 @@ test.describe("mobile portrait (390x844)", () => {
   test("column headers and the time rail stay visible while scrolling in both directions", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#drawerCloseButton");
     await page.waitForTimeout(200);
 
@@ -118,7 +119,7 @@ test.describe("mobile portrait (390x844)", () => {
   test("tapping a card hides the details link and opens a full-screen overlay with directional navigation", async ({ page }) => {
     await page.goto("/index.html");
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#drawerCloseButton");
     await page.waitForTimeout(200);
 
@@ -154,7 +155,7 @@ test.describe("mobile landscape (844x390)", () => {
     await page.goto("/index.html");
     await expect(page.locator("#mobileTopbar")).toBeVisible();
     await page.click("#hamburgerButton");
-    await page.uncheck("#favoritesOnly");
+    await page.uncheck("#plannedOnly");
     await page.click("#drawerCloseButton");
     await page.waitForTimeout(200);
     await expect(page.locator(".session-card").first()).toBeVisible();

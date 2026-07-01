@@ -230,6 +230,7 @@
     }
 
     .mobile-detail-head .booked-button,
+    .mobile-detail-head .planned-button,
     .mobile-detail-head .hide-button,
     .mobile-detail-head .favorite-button {
       width: 34px;
@@ -301,6 +302,99 @@
       grid-row: 2;
     }
 
+    .conflict-overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 28;
+      display: none;
+      background: rgba(20, 18, 15, 0.45);
+    }
+
+    .conflict-overlay-backdrop.open {
+      display: block;
+    }
+
+    .conflict-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 29;
+      display: none;
+      flex-direction: column;
+      width: min(480px, 92vw);
+      max-height: min(560px, 86vh);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transform: translate(-50%, -50%);
+    }
+
+    .conflict-overlay.open {
+      display: flex;
+    }
+
+    .conflict-overlay-head {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .conflict-overlay-hint {
+      flex: 0 0 auto;
+      margin: 10px 14px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .conflict-overlay-list {
+      flex: 1 1 auto;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+
+    .conflict-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+    }
+
+    .conflict-item-info {
+      min-width: 0;
+    }
+
+    .conflict-item-title {
+      margin: 0 0 2px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .conflict-item-meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .conflict-overlay-actions {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+    }
+
     .toolbar {
       flex: 0 0 auto;
       display: grid;
@@ -367,7 +461,7 @@
 
     .filters {
       display: grid;
-      grid-template-columns: repeat(5, minmax(140px, 1fr)) auto;
+      grid-template-columns: repeat(6, minmax(140px, 1fr)) auto;
       gap: 10px;
       align-items: end;
     }
@@ -646,8 +740,33 @@
       background: #fde7e8;
     }
 
+    .planned-button {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--quiet);
+      background: var(--surface);
+      font-size: 13px;
+      line-height: 1;
+      opacity: 0.55;
+    }
+
+    .planned-button[aria-pressed="true"] {
+      opacity: 1;
+      border-color: var(--blue);
+      background: #e5ecfb;
+    }
+
     .session-card.marked-hidden {
       opacity: 0.5;
+    }
+
+    .session-card.planned {
+      box-shadow: 0 0 0 2px var(--blue) inset;
     }
 
     .session-title {
@@ -932,6 +1051,7 @@
       }
 
       .session-card .booked-button,
+      .session-card .planned-button,
       .session-card .hide-button {
         display: none;
       }
@@ -1042,6 +1162,10 @@
           Favorites
         </label>
         <label class="toggle-label">
+          <input id="plannedOnly" type="checkbox">
+          Planned
+        </label>
+        <label class="toggle-label">
           <input id="showHidden" type="checkbox">
           Show hidden
         </label>
@@ -1068,6 +1192,7 @@
     <div class="mobile-detail-head">
       <div class="card-actions">
         <button class="icon-button booked-button" id="mobileDetailBookedButton" type="button" aria-label="Mark booked">🎫</button>
+        <button class="icon-button planned-button" id="mobileDetailPlannedButton" type="button" aria-label="Plan this session">📌</button>
         <button class="icon-button hide-button" id="mobileDetailHideButton" type="button" aria-label="Hide this session">🚫</button>
         <button class="icon-button favorite-button" id="mobileDetailFavoriteButton" type="button" aria-label="Add favorite">☆</button>
       </div>
@@ -1079,6 +1204,19 @@
       <button class="icon-button nav-left" id="mobileDetailNavLeft" type="button" aria-label="Nearest session in the column to the left">◀</button>
       <button class="icon-button nav-down" id="mobileDetailNavDown" type="button" aria-label="Next session in this column">▼</button>
       <button class="icon-button nav-right" id="mobileDetailNavRight" type="button" aria-label="Nearest session in the column to the right">▶</button>
+    </div>
+  </div>
+
+  <div class="conflict-overlay-backdrop" id="conflictOverlayBackdrop"></div>
+  <div class="conflict-overlay" id="conflictOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Planning conflicts">
+    <div class="conflict-overlay-head">
+      <strong>Overlaps with your plan</strong>
+      <button class="icon-button" id="conflictOverlayCloseButton" type="button" aria-label="Close">✕</button>
+    </div>
+    <p class="conflict-overlay-hint" id="conflictOverlayHint"></p>
+    <div class="conflict-overlay-list" id="conflictOverlayList"></div>
+    <div class="conflict-overlay-actions">
+      <button class="action-button" id="conflictOverlayDoneButton" type="button">Done</button>
     </div>
   </div>
 
@@ -1145,11 +1283,14 @@
         stage: "all",
         track: "all",
         favoritesOnly: false,
+        plannedOnly: false,
         showHidden: false
       },
       favorites: new Set(),
       booked: new Set(),
       hidden: new Set(),
+      planned: new Set(),
+      conflictSessionId: null,
       directoryHandle: null,
       fileHandle: null,
       saveTimer: null,
@@ -1173,6 +1314,7 @@
       trackFilter: document.getElementById("trackFilter"),
       favoritesOnly: document.getElementById("favoritesOnly"),
       showHidden: document.getElementById("showHidden"),
+      plannedOnly: document.getElementById("plannedOnly"),
       resetFilters: document.getElementById("resetFilters"),
       summary: document.getElementById("summary"),
       timetable: document.getElementById("timetable"),
@@ -1200,7 +1342,14 @@
       mobileDetailNavRight: document.getElementById("mobileDetailNavRight"),
       mobileDetailBookedButton: document.getElementById("mobileDetailBookedButton"),
       mobileDetailHideButton: document.getElementById("mobileDetailHideButton"),
-      mobileDetailFavoriteButton: document.getElementById("mobileDetailFavoriteButton")
+      mobileDetailFavoriteButton: document.getElementById("mobileDetailFavoriteButton"),
+      mobileDetailPlannedButton: document.getElementById("mobileDetailPlannedButton"),
+      conflictOverlayBackdrop: document.getElementById("conflictOverlayBackdrop"),
+      conflictOverlay: document.getElementById("conflictOverlay"),
+      conflictOverlayCloseButton: document.getElementById("conflictOverlayCloseButton"),
+      conflictOverlayDoneButton: document.getElementById("conflictOverlayDoneButton"),
+      conflictOverlayHint: document.getElementById("conflictOverlayHint"),
+      conflictOverlayList: document.getElementById("conflictOverlayList")
     };
 
     init();
@@ -1219,7 +1368,7 @@
         state.selectedDayKey = pickInitialDay();
         state.isMobile = window.matchMedia(MOBILE_BREAKPOINT_QUERY).matches;
         if (state.isMobile) {
-          state.filters.favoritesOnly = true;
+          state.filters.plannedOnly = true;
           state.autoScrollToNowPending = state.selectedDayKey === todayKey();
         }
 
@@ -1498,6 +1647,10 @@
         state.filters.favoritesOnly = dom.favoritesOnly.checked;
         render();
       });
+      dom.plannedOnly.addEventListener("change", () => {
+        state.filters.plannedOnly = dom.plannedOnly.checked;
+        render();
+      });
       dom.showHidden.addEventListener("change", () => {
         state.filters.showHidden = dom.showHidden.checked;
         render();
@@ -1507,6 +1660,7 @@
         state.filters.stage = "all";
         state.filters.track = "all";
         state.filters.favoritesOnly = false;
+        state.filters.plannedOnly = false;
         state.filters.showHidden = false;
         syncFilterControls();
         render();
@@ -1530,6 +1684,12 @@
       dom.mobileDetailBookedButton.addEventListener("click", () => {
         if (state.detailSessionId != null) {
           toggleBooked(state.detailSessionId);
+          renderMobileDetailContent(state.sessionById.get(state.detailSessionId));
+        }
+      });
+      dom.mobileDetailPlannedButton.addEventListener("click", () => {
+        if (state.detailSessionId != null) {
+          togglePlanned(state.detailSessionId);
           renderMobileDetailContent(state.sessionById.get(state.detailSessionId));
         }
       });
@@ -1565,6 +1725,10 @@
           navigateMobileDetail("right");
         }
       });
+
+      dom.conflictOverlayCloseButton.addEventListener("click", closeConflictOverlay);
+      dom.conflictOverlayDoneButton.addEventListener("click", closeConflictOverlay);
+      dom.conflictOverlayBackdrop.addEventListener("click", closeConflictOverlay);
     }
 
     function setupResponsiveLayout() {
@@ -1618,6 +1782,7 @@
       dom.stageFilter.value = state.filters.stage;
       dom.trackFilter.value = state.filters.track;
       dom.favoritesOnly.checked = state.filters.favoritesOnly;
+      dom.plannedOnly.checked = state.filters.plannedOnly;
       dom.showHidden.checked = state.filters.showHidden;
     }
 
@@ -1676,6 +1841,9 @@
       if (state.filters.favoritesOnly) {
         parts.push("★ Favorites");
       }
+      if (state.filters.plannedOnly) {
+        parts.push("📌 Planned");
+      }
       dom.mobileSummary.textContent = parts.join(" · ");
     }
 
@@ -1695,6 +1863,9 @@
           return false;
         }
         if (state.filters.favoritesOnly && !state.favorites.has(session.id)) {
+          return false;
+        }
+        if (state.filters.plannedOnly && !state.planned.has(session.id)) {
           return false;
         }
         if (!state.filters.showHidden) {
@@ -2095,6 +2266,7 @@
       article.className = "session-card " + session.typeClass
         + (session.durationMinutes <= 10 ? " micro" : "")
         + (state.favorites.has(session.id) ? " favorite" : "")
+        + (state.planned.has(session.id) ? " planned" : "")
         + (state.hidden.has(session.id) ? " marked-hidden" : "");
       article.dataset.sessionId = String(session.id);
 
@@ -2133,6 +2305,16 @@
         booked.textContent = "🎫";
         actions.append(booked);
       }
+
+      const planned = document.createElement("button");
+      planned.type = "button";
+      planned.className = "planned-button";
+      planned.dataset.plannedId = String(session.id);
+      planned.setAttribute("aria-pressed", String(state.planned.has(session.id)));
+      planned.setAttribute("aria-label", (state.planned.has(session.id) ? "Unplan: " : "Plan: ") + session.title);
+      planned.title = state.planned.has(session.id) ? "Unplan" : "Plan (clears same-time conflicts, flags overlaps)";
+      planned.textContent = "📌";
+      actions.append(planned);
 
       const hide = document.createElement("button");
       hide.type = "button";
@@ -2225,6 +2407,14 @@
         return;
       }
 
+      const plannedButton = event.target.closest("[data-planned-id]");
+      if (plannedButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        togglePlanned(Number(plannedButton.dataset.plannedId));
+        return;
+      }
+
       const hideButton = event.target.closest("[data-hide-id]");
       if (hideButton) {
         event.preventDefault();
@@ -2261,10 +2451,127 @@
       } else {
         state.booked.add(sessionId);
         state.favorites.add(sessionId);
+        state.planned.add(sessionId);
+        resolvePlanningConflicts(sessionId);
       }
       state.dirtyFavorites = true;
       schedulePreferenceSave();
       render();
+    }
+
+    function isWorkshopSession(session) {
+      return session.typeKey === "Workshop";
+    }
+
+    // Planning (or booking, which auto-plans) a session auto-favorites it and
+    // clears same-start-time conflicts automatically. Partial-overlap
+    // conflicts are surfaced for the user to resolve by hand. Workshops are
+    // never removed by either path — booking is a deliberate commitment.
+    function togglePlanned(sessionId) {
+      if (state.planned.has(sessionId)) {
+        state.planned.delete(sessionId);
+      } else {
+        state.planned.add(sessionId);
+        state.favorites.add(sessionId);
+        resolvePlanningConflicts(sessionId);
+      }
+      state.dirtyFavorites = true;
+      schedulePreferenceSave();
+      render();
+    }
+
+    function resolvePlanningConflicts(sessionId) {
+      const session = state.sessionById.get(sessionId);
+      if (!session) {
+        return;
+      }
+
+      for (const otherId of [...state.planned]) {
+        if (otherId === sessionId) {
+          continue;
+        }
+        const other = state.sessionById.get(otherId);
+        if (!other || isWorkshopSession(other)) {
+          continue;
+        }
+        if (other.startMinute === session.startMinute) {
+          state.planned.delete(otherId);
+        }
+      }
+
+      const overlapping = [...state.planned].filter((otherId) => {
+        if (otherId === sessionId) {
+          return false;
+        }
+        const other = state.sessionById.get(otherId);
+        if (!other || isWorkshopSession(other)) {
+          return false;
+        }
+        return other.startMinute < session.endMinute && other.endMinute > session.startMinute;
+      });
+
+      if (overlapping.length > 0) {
+        openConflictOverlay(sessionId, overlapping);
+      }
+    }
+
+    function openConflictOverlay(sessionId, conflictingIds) {
+      const session = state.sessionById.get(sessionId);
+      state.conflictSessionId = sessionId;
+      dom.conflictOverlayHint.textContent = "These planned items overlap with “" + session.title + "”. Unplan the ones you don’t need.";
+      renderConflictOverlayList(conflictingIds);
+      dom.conflictOverlay.classList.add("open");
+      dom.conflictOverlayBackdrop.classList.add("open");
+      dom.conflictOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function renderConflictOverlayList(conflictingIds) {
+      dom.conflictOverlayList.replaceChildren();
+      for (const id of conflictingIds) {
+        const session = state.sessionById.get(id);
+        if (!session) {
+          continue;
+        }
+        const row = document.createElement("div");
+        row.className = "conflict-item";
+
+        const info = document.createElement("div");
+        info.className = "conflict-item-info";
+        const title = document.createElement("p");
+        title.className = "conflict-item-title";
+        title.textContent = session.title;
+        const meta = document.createElement("p");
+        meta.className = "conflict-item-meta";
+        meta.textContent = session.timeLabel + " · " + session.stageName;
+        info.append(title, meta);
+
+        const unplanButton = document.createElement("button");
+        unplanButton.type = "button";
+        unplanButton.className = "action-button";
+        unplanButton.textContent = "Unplan";
+        unplanButton.addEventListener("click", () => {
+          state.planned.delete(id);
+          state.dirtyFavorites = true;
+          schedulePreferenceSave();
+          render();
+          const remaining = conflictingIds.filter((remainingId) => remainingId !== id && state.planned.has(remainingId));
+          if (remaining.length === 0) {
+            closeConflictOverlay();
+          } else {
+            renderConflictOverlayList(remaining);
+          }
+        });
+
+        row.append(info, unplanButton);
+        dom.conflictOverlayList.append(row);
+      }
+    }
+
+    function closeConflictOverlay() {
+      dom.conflictOverlay.classList.remove("open");
+      dom.conflictOverlayBackdrop.classList.remove("open");
+      dom.conflictOverlay.setAttribute("aria-hidden", "true");
+      state.conflictSessionId = null;
     }
 
     function toggleHidden(sessionId) {
@@ -2381,6 +2688,9 @@
       dom.mobileDetailBookedButton.style.display = session.typeKey === "Workshop" ? "" : "none";
       dom.mobileDetailBookedButton.setAttribute("aria-pressed", String(state.booked.has(session.id)));
       dom.mobileDetailBookedButton.title = state.booked.has(session.id) ? "Unmark booked" : "Mark booked (hides other workshops by default)";
+
+      dom.mobileDetailPlannedButton.setAttribute("aria-pressed", String(state.planned.has(session.id)));
+      dom.mobileDetailPlannedButton.title = state.planned.has(session.id) ? "Unplan" : "Plan (clears same-time conflicts, flags overlaps)";
 
       dom.mobileDetailHideButton.setAttribute("aria-pressed", String(state.hidden.has(session.id)));
       dom.mobileDetailHideButton.title = state.hidden.has(session.id) ? "Unhide" : "Hide this session";
@@ -2579,6 +2889,11 @@
           state.hidden.add(hiddenId);
         }
       }
+      for (const plannedId of loaded.planned) {
+        if (state.sessionById.has(plannedId)) {
+          state.planned.add(plannedId);
+        }
+      }
       state.dirtyFavorites = state.dirtyFavorites || state.favorites.size !== before || loaded.favorites.length === 0;
       state.saveMessage = "Connected to " + PREFS_FILE_NAME;
       if (state.dirtyFavorites) {
@@ -2599,7 +2914,7 @@
     }
 
     async function readPreferencesFromFile(fileHandle) {
-      const empty = { favorites: [], booked: [], hidden: [] };
+      const empty = { favorites: [], booked: [], hidden: [], planned: [] };
       const file = await fileHandle.getFile();
       if (file.size === 0) {
         return empty;
@@ -2613,7 +2928,8 @@
       return {
         favorites: toIdList(parsed.favorites),
         booked: toIdList(parsed.booked),
-        hidden: toIdList(parsed.hidden)
+        hidden: toIdList(parsed.hidden),
+        planned: toIdList(parsed.planned)
       };
     }
 
@@ -2645,7 +2961,8 @@
         updatedAt: new Date().toISOString(),
         favorites: [...state.favorites].sort((a, b) => a - b),
         booked: [...state.booked].sort((a, b) => a - b),
-        hidden: [...state.hidden].sort((a, b) => a - b)
+        hidden: [...state.hidden].sort((a, b) => a - b),
+        planned: [...state.planned].sort((a, b) => a - b)
       };
       const writable = await state.fileHandle.createWritable();
       await writable.write(JSON.stringify(payload, null, 2) + "\n");
