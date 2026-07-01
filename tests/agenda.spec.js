@@ -194,3 +194,39 @@ test("reset filters clears all filter selections", async ({ page }) => {
   await expect(page.locator("#typeFilter")).toHaveValue("all");
   await expect(page.locator("#favoritesOnly")).not.toBeChecked();
 });
+
+test("booking a workshop auto-favorites it and hides other unbooked workshops by default", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.selectOption("#typeFilter", { label: "Workshop" });
+  const before = await page.locator(".session-card").count();
+  expect(before).toBeGreaterThan(1);
+
+  const firstCard = page.locator(".session-card").first();
+  await firstCard.locator("[data-booked-id]").click();
+
+  await expect(page.locator(".session-card")).toHaveCount(1);
+  await expect(firstCard.locator(".favorite-button")).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator("#showHidden").check();
+  await expect(page.locator(".session-card")).toHaveCount(before);
+});
+
+test("manually hiding a session removes it, and Show hidden reveals it again dimmed", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.selectOption("#typeFilter", { label: "Talk" });
+  const before = await page.locator(".session-card").count();
+
+  const targetCard = page.locator(".session-card").nth(1);
+  const targetTitle = await targetCard.locator(".session-title").textContent();
+  await targetCard.locator("[data-hide-id]").click();
+  await expect(page.locator(".session-card")).toHaveCount(before - 1);
+
+  await page.locator("#showHidden").check();
+  await expect(page.locator(".session-card")).toHaveCount(before);
+  await expect(page.locator(".session-card.marked-hidden .session-title")).toHaveText(targetTitle || "");
+
+  // Unhide restores it under the default (hidden-excluding) filter.
+  await page.locator(".session-card.marked-hidden [data-hide-id]").click();
+  await page.locator("#showHidden").uncheck();
+  await expect(page.locator(".session-card")).toHaveCount(before);
+});

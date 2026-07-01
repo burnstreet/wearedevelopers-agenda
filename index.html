@@ -223,9 +223,19 @@
     .mobile-detail-head {
       flex: 0 0 auto;
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      justify-content: space-between;
       padding: 8px;
       border-bottom: 1px solid var(--line);
+    }
+
+    .mobile-detail-head .booked-button,
+    .mobile-detail-head .hide-button,
+    .mobile-detail-head .favorite-button {
+      width: 34px;
+      height: 34px;
+      font-size: 15px;
+      opacity: 1;
     }
 
     .mobile-detail-content {
@@ -600,6 +610,45 @@
       background: #fff6d8;
     }
 
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .booked-button,
+    .hide-button {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--quiet);
+      background: var(--surface);
+      font-size: 13px;
+      line-height: 1;
+      opacity: 0.55;
+    }
+
+    .booked-button[aria-pressed="true"] {
+      opacity: 1;
+      border-color: var(--teal);
+      background: #e3f6f4;
+    }
+
+    .hide-button[aria-pressed="true"] {
+      opacity: 1;
+      border-color: var(--accent-dark);
+      background: #fde7e8;
+    }
+
+    .session-card.marked-hidden {
+      opacity: 0.5;
+    }
+
     .session-title {
       display: -webkit-box;
       margin: 0;
@@ -881,6 +930,11 @@
         display: none;
       }
 
+      .session-card .booked-button,
+      .session-card .hide-button {
+        display: none;
+      }
+
       .session-card {
         cursor: pointer;
       }
@@ -986,6 +1040,10 @@
           <input id="favoritesOnly" type="checkbox">
           Favorites
         </label>
+        <label class="toggle-label">
+          <input id="showHidden" type="checkbox">
+          Show hidden
+        </label>
         <button class="action-button" id="resetFilters" type="button">Reset</button>
       </div>
     </section>
@@ -1007,6 +1065,11 @@
 
   <div class="mobile-detail-overlay" id="mobileDetailOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Session details">
     <div class="mobile-detail-head">
+      <div class="card-actions">
+        <button class="icon-button booked-button" id="mobileDetailBookedButton" type="button" aria-label="Mark booked">🎫</button>
+        <button class="icon-button hide-button" id="mobileDetailHideButton" type="button" aria-label="Hide this session">🚫</button>
+        <button class="icon-button favorite-button" id="mobileDetailFavoriteButton" type="button" aria-label="Add favorite">☆</button>
+      </div>
       <button class="icon-button" id="mobileDetailCloseButton" type="button" aria-label="Close details">✕</button>
     </div>
     <div class="mobile-detail-content" id="mobileDetailContent"></div>
@@ -1079,9 +1142,12 @@
         type: "all",
         stage: "all",
         track: "all",
-        favoritesOnly: false
+        favoritesOnly: false,
+        showHidden: false
       },
       favorites: new Set(),
+      booked: new Set(),
+      hidden: new Set(),
       directoryHandle: null,
       fileHandle: null,
       saveTimer: null,
@@ -1104,6 +1170,7 @@
       stageFilter: document.getElementById("stageFilter"),
       trackFilter: document.getElementById("trackFilter"),
       favoritesOnly: document.getElementById("favoritesOnly"),
+      showHidden: document.getElementById("showHidden"),
       resetFilters: document.getElementById("resetFilters"),
       summary: document.getElementById("summary"),
       timetable: document.getElementById("timetable"),
@@ -1128,7 +1195,10 @@
       mobileDetailNavUp: document.getElementById("mobileDetailNavUp"),
       mobileDetailNavDown: document.getElementById("mobileDetailNavDown"),
       mobileDetailNavLeft: document.getElementById("mobileDetailNavLeft"),
-      mobileDetailNavRight: document.getElementById("mobileDetailNavRight")
+      mobileDetailNavRight: document.getElementById("mobileDetailNavRight"),
+      mobileDetailBookedButton: document.getElementById("mobileDetailBookedButton"),
+      mobileDetailHideButton: document.getElementById("mobileDetailHideButton"),
+      mobileDetailFavoriteButton: document.getElementById("mobileDetailFavoriteButton")
     };
 
     init();
@@ -1426,11 +1496,16 @@
         state.filters.favoritesOnly = dom.favoritesOnly.checked;
         render();
       });
+      dom.showHidden.addEventListener("change", () => {
+        state.filters.showHidden = dom.showHidden.checked;
+        render();
+      });
       dom.resetFilters.addEventListener("click", () => {
         state.filters.type = "all";
         state.filters.stage = "all";
         state.filters.track = "all";
         state.filters.favoritesOnly = false;
+        state.filters.showHidden = false;
         syncFilterControls();
         render();
       });
@@ -1450,6 +1525,24 @@
       dom.scrollRightButton.addEventListener("click", () => scrollByOneColumn(1));
 
       dom.mobileDetailCloseButton.addEventListener("click", closeMobileDetail);
+      dom.mobileDetailBookedButton.addEventListener("click", () => {
+        if (state.detailSessionId != null) {
+          toggleBooked(state.detailSessionId);
+          renderMobileDetailContent(state.sessionById.get(state.detailSessionId));
+        }
+      });
+      dom.mobileDetailHideButton.addEventListener("click", () => {
+        if (state.detailSessionId != null) {
+          toggleHidden(state.detailSessionId);
+          renderMobileDetailContent(state.sessionById.get(state.detailSessionId));
+        }
+      });
+      dom.mobileDetailFavoriteButton.addEventListener("click", () => {
+        if (state.detailSessionId != null) {
+          toggleFavorite(state.detailSessionId);
+          renderMobileDetailContent(state.sessionById.get(state.detailSessionId));
+        }
+      });
       dom.mobileDetailNavUp.addEventListener("click", () => navigateMobileDetail("up"));
       dom.mobileDetailNavDown.addEventListener("click", () => navigateMobileDetail("down"));
       dom.mobileDetailNavLeft.addEventListener("click", () => navigateMobileDetail("left"));
@@ -1523,6 +1616,7 @@
       dom.stageFilter.value = state.filters.stage;
       dom.trackFilter.value = state.filters.track;
       dom.favoritesOnly.checked = state.filters.favoritesOnly;
+      dom.showHidden.checked = state.filters.showHidden;
     }
 
     function render() {
@@ -1600,6 +1694,14 @@
         }
         if (state.filters.favoritesOnly && !state.favorites.has(session.id)) {
           return false;
+        }
+        if (!state.filters.showHidden) {
+          if (state.hidden.has(session.id)) {
+            return false;
+          }
+          if (session.typeKey === "Workshop" && state.booked.size > 0 && !state.booked.has(session.id)) {
+            return false;
+          }
         }
         return true;
       });
@@ -1964,7 +2066,10 @@
 
     function createSessionCard(session, layout, mode, bounds) {
       const article = document.createElement("article");
-      article.className = "session-card " + session.typeClass + (session.durationMinutes <= 10 ? " micro" : "") + (state.favorites.has(session.id) ? " favorite" : "");
+      article.className = "session-card " + session.typeClass
+        + (session.durationMinutes <= 10 ? " micro" : "")
+        + (state.favorites.has(session.id) ? " favorite" : "")
+        + (state.hidden.has(session.id) ? " marked-hidden" : "");
       article.dataset.sessionId = String(session.id);
 
       if (mode === "grid" && layout && bounds) {
@@ -1987,7 +2092,33 @@
       favorite.setAttribute("aria-label", (state.favorites.has(session.id) ? "Remove favorite: " : "Add favorite: ") + session.title);
       favorite.title = state.favorites.has(session.id) ? "Remove favorite" : "Add favorite";
       favorite.textContent = state.favorites.has(session.id) ? "★" : "☆";
-      top.append(time, favorite);
+
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+
+      if (session.typeKey === "Workshop") {
+        const booked = document.createElement("button");
+        booked.type = "button";
+        booked.className = "booked-button";
+        booked.dataset.bookedId = String(session.id);
+        booked.setAttribute("aria-pressed", String(state.booked.has(session.id)));
+        booked.setAttribute("aria-label", (state.booked.has(session.id) ? "Unmark booked: " : "Mark booked: ") + session.title);
+        booked.title = state.booked.has(session.id) ? "Unmark booked" : "Mark booked (hides other workshops by default)";
+        booked.textContent = "🎫";
+        actions.append(booked);
+      }
+
+      const hide = document.createElement("button");
+      hide.type = "button";
+      hide.className = "hide-button";
+      hide.dataset.hideId = String(session.id);
+      hide.setAttribute("aria-pressed", String(state.hidden.has(session.id)));
+      hide.setAttribute("aria-label", (state.hidden.has(session.id) ? "Unhide: " : "Hide: ") + session.title);
+      hide.title = state.hidden.has(session.id) ? "Unhide" : "Hide this session";
+      hide.textContent = "🚫";
+      actions.append(hide, favorite);
+
+      top.append(time, actions);
 
       const title = document.createElement("h3");
       title.className = "session-title";
@@ -2049,11 +2180,27 @@
     }
 
     function handleTimetableClick(event) {
-      const button = event.target.closest("[data-favorite-id]");
-      if (button) {
+      const favoriteButton = event.target.closest("[data-favorite-id]");
+      if (favoriteButton) {
         event.preventDefault();
         event.stopPropagation();
-        toggleFavorite(Number(button.dataset.favoriteId));
+        toggleFavorite(Number(favoriteButton.dataset.favoriteId));
+        return;
+      }
+
+      const bookedButton = event.target.closest("[data-booked-id]");
+      if (bookedButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleBooked(Number(bookedButton.dataset.bookedId));
+        return;
+      }
+
+      const hideButton = event.target.closest("[data-hide-id]");
+      if (hideButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleHidden(Number(hideButton.dataset.hideId));
         return;
       }
 
@@ -2071,6 +2218,31 @@
         state.favorites.delete(sessionId);
       } else {
         state.favorites.add(sessionId);
+      }
+      state.dirtyFavorites = true;
+      schedulePreferenceSave();
+      render();
+    }
+
+    // Booking a workshop automatically favorites it too, so it surfaces
+    // wherever favorites do without a separate toggle.
+    function toggleBooked(sessionId) {
+      if (state.booked.has(sessionId)) {
+        state.booked.delete(sessionId);
+      } else {
+        state.booked.add(sessionId);
+        state.favorites.add(sessionId);
+      }
+      state.dirtyFavorites = true;
+      schedulePreferenceSave();
+      render();
+    }
+
+    function toggleHidden(sessionId) {
+      if (state.hidden.has(sessionId)) {
+        state.hidden.delete(sessionId);
+      } else {
+        state.hidden.add(sessionId);
       }
       state.dirtyFavorites = true;
       schedulePreferenceSave();
@@ -2176,6 +2348,19 @@
       dom.mobileDetailContent.scrollTop = 0;
     }
 
+    function updateMobileDetailHeadButtons(session) {
+      dom.mobileDetailBookedButton.style.display = session.typeKey === "Workshop" ? "" : "none";
+      dom.mobileDetailBookedButton.setAttribute("aria-pressed", String(state.booked.has(session.id)));
+      dom.mobileDetailBookedButton.title = state.booked.has(session.id) ? "Unmark booked" : "Mark booked (hides other workshops by default)";
+
+      dom.mobileDetailHideButton.setAttribute("aria-pressed", String(state.hidden.has(session.id)));
+      dom.mobileDetailHideButton.title = state.hidden.has(session.id) ? "Unhide" : "Hide this session";
+
+      dom.mobileDetailFavoriteButton.setAttribute("aria-pressed", String(state.favorites.has(session.id)));
+      dom.mobileDetailFavoriteButton.textContent = state.favorites.has(session.id) ? "★" : "☆";
+      dom.mobileDetailFavoriteButton.title = state.favorites.has(session.id) ? "Remove favorite" : "Add favorite";
+    }
+
     function closeMobileDetail() {
       dom.mobileDetailOverlay.classList.remove("open");
       dom.mobileDetailOverlay.setAttribute("aria-hidden", "true");
@@ -2183,6 +2368,7 @@
     }
 
     function renderMobileDetailContent(session) {
+      updateMobileDetailHeadButtons(session);
       dom.mobileDetailContent.replaceChildren();
 
       const title = document.createElement("h2");
@@ -2347,14 +2533,24 @@
 
       state.directoryHandle = directoryHandle;
       state.fileHandle = await directoryHandle.getFileHandle(PREFS_FILE_NAME, { create: true });
-      const loadedFavorites = await readFavoritesFromFile(state.fileHandle);
+      const loaded = await readPreferencesFromFile(state.fileHandle);
       const before = state.favorites.size;
-      for (const favorite of loadedFavorites) {
+      for (const favorite of loaded.favorites) {
         if (state.sessionById.has(favorite)) {
           state.favorites.add(favorite);
         }
       }
-      state.dirtyFavorites = state.dirtyFavorites || state.favorites.size !== before || loadedFavorites.length === 0;
+      for (const bookedId of loaded.booked) {
+        if (state.sessionById.has(bookedId)) {
+          state.booked.add(bookedId);
+        }
+      }
+      for (const hiddenId of loaded.hidden) {
+        if (state.sessionById.has(hiddenId)) {
+          state.hidden.add(hiddenId);
+        }
+      }
+      state.dirtyFavorites = state.dirtyFavorites || state.favorites.size !== before || loaded.favorites.length === 0;
       state.saveMessage = "Connected to " + PREFS_FILE_NAME;
       if (state.dirtyFavorites) {
         await savePreferencesNow();
@@ -2373,17 +2569,23 @@
       return false;
     }
 
-    async function readFavoritesFromFile(fileHandle) {
+    async function readPreferencesFromFile(fileHandle) {
+      const empty = { favorites: [], booked: [], hidden: [] };
       const file = await fileHandle.getFile();
       if (file.size === 0) {
-        return [];
+        return empty;
       }
       const text = await file.text();
       if (!text.trim()) {
-        return [];
+        return empty;
       }
       const parsed = JSON.parse(text);
-      return Array.isArray(parsed.favorites) ? parsed.favorites.map(Number).filter(Number.isFinite) : [];
+      const toIdList = (value) => Array.isArray(value) ? value.map(Number).filter(Number.isFinite) : [];
+      return {
+        favorites: toIdList(parsed.favorites),
+        booked: toIdList(parsed.booked),
+        hidden: toIdList(parsed.hidden)
+      };
     }
 
     function schedulePreferenceSave() {
@@ -2412,7 +2614,9 @@
         eventId: state.event.id,
         eventName: state.event.name,
         updatedAt: new Date().toISOString(),
-        favorites: [...state.favorites].sort((a, b) => a - b)
+        favorites: [...state.favorites].sort((a, b) => a - b),
+        booked: [...state.booked].sort((a, b) => a - b),
+        hidden: [...state.hidden].sort((a, b) => a - b)
       };
       const writable = await state.fileHandle.createWritable();
       await writable.write(JSON.stringify(payload, null, 2) + "\n");
