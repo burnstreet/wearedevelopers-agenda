@@ -1,0 +1,1912 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WeAreDevelopers World Congress 2026 Agenda</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f4ef;
+      --surface: #ffffff;
+      --surface-soft: #fbfaf7;
+      --ink: #171717;
+      --muted: #626262;
+      --quiet: #8a8a8a;
+      --line: #ded9cf;
+      --line-strong: #c9c2b6;
+      --accent: #e21f2f;
+      --accent-dark: #a9121f;
+      --teal: #087f7a;
+      --blue: #2854b8;
+      --gold: #9a6510;
+      --shadow: 0 18px 44px rgba(20, 18, 15, 0.14);
+      --radius: 8px;
+      --rail: 76px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 18px;
+    }
+
+    .app-header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 4px 0 18px;
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 3vw, 46px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preference-panel {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      min-width: min(520px, 100%);
+    }
+
+    .status-pill {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      max-width: 360px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .toolbar {
+      flex: 0 0 auto;
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(251, 250, 247, 0.96);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .segmented {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .segmented button,
+    .action-button {
+      min-height: 34px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: transparent;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      color: #ffffff;
+      border-color: var(--accent-dark);
+      background: var(--accent);
+    }
+
+    .action-button {
+      border-color: var(--line-strong);
+      background: var(--surface);
+    }
+
+    .action-button:hover,
+    .segmented button:hover {
+      border-color: var(--accent);
+    }
+
+    .action-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.56;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr)) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .field span,
+    .toggle-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 7px 30px 7px 10px;
+      color: var(--ink);
+      background: var(--surface);
+    }
+
+    .toggle-label {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      background: var(--surface);
+      text-transform: none;
+      color: var(--ink);
+    }
+
+    .toggle-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .summary {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 14px 0 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .summary strong {
+      color: var(--ink);
+    }
+
+    .timetable {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .timeline-grid {
+      display: grid;
+      min-width: max-content;
+      background: var(--surface);
+    }
+
+    .corner-cell,
+    .column-header {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      min-height: 46px;
+      border-bottom: 1px solid var(--line-strong);
+      background: var(--surface);
+    }
+
+    .corner-cell {
+      left: 0;
+      z-index: 5;
+      border-right: 1px solid var(--line);
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+      border-right: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .column-header small {
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .time-rail,
+    .lane {
+      position: relative;
+      min-height: var(--timeline-height);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(var(--tick-size) - 1px),
+        rgba(222, 217, 207, 0.9) calc(var(--tick-size) - 1px),
+        rgba(222, 217, 207, 0.9) var(--tick-size)
+      );
+    }
+
+    .time-rail {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      border-right: 1px solid var(--line);
+      background-color: var(--surface-soft);
+    }
+
+    .lane {
+      border-right: 1px solid var(--line);
+      background-color: #ffffff;
+    }
+
+    .time-label {
+      position: absolute;
+      right: 9px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .session-card {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(16px, auto) minmax(0, 1fr) auto;
+      gap: 4px;
+      min-width: 0;
+      border: 1px solid #d8d2c7;
+      border-left: 4px solid var(--blue);
+      border-radius: var(--radius);
+      padding: 7px 8px;
+      background: #ffffff;
+      box-shadow: 0 1px 0 rgba(20, 18, 15, 0.06);
+      overflow: hidden;
+    }
+
+    .timeline-grid .session-card {
+      position: absolute;
+      z-index: 1;
+    }
+
+    .session-card:hover,
+    .session-card:focus-within {
+      z-index: 6;
+      border-color: #b9b0a3;
+      box-shadow: 0 10px 24px rgba(20, 18, 15, 0.16);
+    }
+
+    .session-card.favorite {
+      border-left-color: var(--gold);
+      background: #fffdf7;
+    }
+
+    .session-card.type-workshop {
+      border-left-color: var(--teal);
+    }
+
+    .session-card.type-panel {
+      border-left-color: var(--accent);
+    }
+
+    .session-card.type-activity {
+      border-left-color: var(--gold);
+    }
+
+    .session-card.type-lightning-talk,
+    .session-card.type-pitch {
+      border-left-color: #6d45b8;
+    }
+
+    .card-top,
+    .card-footer,
+    .card-meta {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: 6px;
+    }
+
+    .card-top {
+      justify-content: space-between;
+    }
+
+    .time-range {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .favorite-button {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--quiet);
+      background: var(--surface);
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .favorite-button[aria-pressed="true"] {
+      color: var(--gold);
+      border-color: #c89432;
+      background: #fff6d8;
+    }
+
+    .session-title {
+      display: -webkit-box;
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.22;
+      font-weight: 900;
+      letter-spacing: 0;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .session-card.micro .session-title {
+      font-size: 12px;
+      -webkit-line-clamp: 2;
+    }
+
+    .card-meta {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .card-footer {
+      justify-content: space-between;
+      align-self: end;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .type-chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 3px 7px;
+      color: #ffffff;
+      background: var(--blue);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .type-workshop .type-chip {
+      background: var(--teal);
+    }
+
+    .type-panel .type-chip {
+      background: var(--accent);
+    }
+
+    .type-activity .type-chip {
+      background: var(--gold);
+    }
+
+    .type-lightning-talk .type-chip,
+    .type-pitch .type-chip {
+      background: #6d45b8;
+    }
+
+    .details-link {
+      flex: 0 0 auto;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .details-link:hover {
+      text-decoration: underline;
+    }
+
+    .list-view {
+      display: grid;
+      gap: 8px;
+      max-width: 1120px;
+    }
+
+    .list-row {
+      display: grid;
+      grid-template-columns: var(--rail) minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .list-time {
+      position: sticky;
+      top: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      padding-top: 10px;
+      text-align: right;
+    }
+
+    .list-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .list-stack .session-card {
+      min-height: 102px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .list-stack .session-title {
+      font-size: 15px;
+      -webkit-line-clamp: 2;
+    }
+
+    .empty-state,
+    .load-error {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .empty-state strong,
+    .load-error strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .detail-popover {
+      position: fixed;
+      z-index: 30;
+      display: none;
+      width: min(420px, calc(100vw - 24px));
+      max-height: min(620px, calc(100vh - 24px));
+      overflow: auto;
+      border: 1px solid #b9b0a3;
+      border-radius: var(--radius);
+      padding: 14px;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-popover h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .detail-popover .detail-line {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .detail-popover .description {
+      margin: 12px 0 0;
+      color: #2c2c2c;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .tag-list span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 7px;
+      color: var(--muted);
+      background: var(--surface-soft);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 980px) {
+      .app-header {
+        display: grid;
+      }
+
+      .preference-panel {
+        justify-content: flex-start;
+        min-width: 0;
+      }
+
+      .filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .toolbar {
+        padding: 10px;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .segmented {
+        width: 100%;
+      }
+
+      .segmented button {
+        flex: 1 1 auto;
+      }
+
+      .summary {
+        font-size: 13px;
+      }
+
+      .list-row {
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 8px;
+      }
+
+      .list-time {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">World Congress 2026 Berlin</p>
+        <h1>Agenda Timetable</h1>
+        <div class="header-meta">
+          <span id="eventRange">Loading agenda</span>
+          <span id="eventStats"></span>
+        </div>
+      </div>
+      <div class="preference-panel" aria-label="Favorite storage">
+        <button class="action-button" id="folderButton" type="button">Choose folder</button>
+        <span class="status-pill" id="preferenceStatus">Favorites are not connected</span>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Agenda controls">
+      <div class="control-row">
+        <div class="segmented" id="dayTabs" aria-label="Day"></div>
+        <div class="segmented" id="viewTabs" aria-label="View"></div>
+      </div>
+      <div class="filters">
+        <label class="field">
+          <span>Type</span>
+          <select id="typeFilter"></select>
+        </label>
+        <label class="field">
+          <span>Stage</span>
+          <select id="stageFilter"></select>
+        </label>
+        <label class="field">
+          <span>Track</span>
+          <select id="trackFilter"></select>
+        </label>
+        <label class="toggle-label">
+          <input id="favoritesOnly" type="checkbox">
+          Favorites
+        </label>
+        <button class="action-button" id="resetFilters" type="button">Reset</button>
+      </div>
+    </section>
+
+    <section class="summary" id="summary" aria-live="polite"></section>
+    <main class="timetable" id="timetable"></main>
+  </div>
+
+  <div class="detail-popover" id="detailPopover" role="dialog" aria-label="Session details"></div>
+
+  <script>
+    const AGENDA_URL = "16.json";
+    const EVENT_TIME_ZONE = "Europe/Berlin";
+    const PREFS_FILE_NAME = "wad2026-preferences.json";
+    const DETAIL_URL_BASE = "https://app.wearedevelopers.com/events";
+    const PX_PER_MINUTE = 2.1;
+    const TICK_MINUTES = 30;
+    const DEFAULT_START_MINUTE = 9 * 60;
+    const DEFAULT_END_MINUTE = 18 * 60;
+
+    const typeLabels = new Map([
+      [9, "Talk"],
+      [10, "Panel"],
+      [11, "Workshop"],
+      [13, "Activity"],
+      [14, "Lightning Talk"],
+      [15, "Pitch"]
+    ]);
+
+    const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
+    const timeFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: EVENT_TIME_ZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+    const datePartsFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: EVENT_TIME_ZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+    const dayLabelFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: EVENT_TIME_ZONE,
+      weekday: "short",
+      day: "numeric",
+      month: "short"
+    });
+    const longDayFormatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: EVENT_TIME_ZONE,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+
+    const state = {
+      event: null,
+      sessions: [],
+      sessionById: new Map(),
+      eventDayKeys: [],
+      selectedDayKey: null,
+      view: "stage",
+      filters: {
+        type: "all",
+        stage: "all",
+        track: "all",
+        favoritesOnly: false
+      },
+      favorites: new Set(),
+      directoryHandle: null,
+      fileHandle: null,
+      saveTimer: null,
+      saveMessage: "Favorites are not connected",
+      dirtyFavorites: false,
+      hoverCard: null
+    };
+
+    const dom = {
+      eventRange: document.getElementById("eventRange"),
+      eventStats: document.getElementById("eventStats"),
+      dayTabs: document.getElementById("dayTabs"),
+      viewTabs: document.getElementById("viewTabs"),
+      typeFilter: document.getElementById("typeFilter"),
+      stageFilter: document.getElementById("stageFilter"),
+      trackFilter: document.getElementById("trackFilter"),
+      favoritesOnly: document.getElementById("favoritesOnly"),
+      resetFilters: document.getElementById("resetFilters"),
+      summary: document.getElementById("summary"),
+      timetable: document.getElementById("timetable"),
+      folderButton: document.getElementById("folderButton"),
+      preferenceStatus: document.getElementById("preferenceStatus"),
+      detailPopover: document.getElementById("detailPopover")
+    };
+
+    init();
+
+    async function init() {
+      try {
+        const response = await fetch(AGENDA_URL, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Agenda request failed with status " + response.status);
+        }
+        const agenda = await response.json();
+        state.event = agenda.data;
+        state.sessions = state.event.sessions.map(normalizeSession).sort(sortByTime);
+        state.sessionById = new Map(state.sessions.map((session) => [session.id, session]));
+        state.eventDayKeys = getEventDayKeys();
+        state.selectedDayKey = pickInitialDay();
+
+        renderHeader();
+        renderDayTabs();
+        renderViewTabs();
+        populateFilters();
+        bindEvents();
+        updatePreferenceUi();
+        render();
+        restoreStoredDirectory()
+          .then(() => {
+            updatePreferenceUi();
+            render();
+          })
+          .catch(() => {
+            state.saveMessage = "Stored folder unavailable";
+            updatePreferenceUi();
+          });
+      } catch (error) {
+        showLoadError(error);
+      }
+    }
+
+    function normalizeSession(raw) {
+      const startDate = new Date(raw.starts_at);
+      const endDate = new Date(raw.ends_at);
+      const durationMinutes = Math.max(5, Math.round((raw.ends_at_timestamp - raw.starts_at_timestamp) / 60000));
+      const startMinute = minuteOfDay(startDate);
+      const stageName = cleanStageName(raw.stage && raw.stage.name ? raw.stage.name : raw.stage_search_name);
+      const trackName = raw.track && raw.track.name ? raw.track.name : "Untracked";
+      const typeLabel = getTypeLabel(raw);
+      const speakers = Array.isArray(raw.speakers) ? raw.speakers : [];
+
+      return {
+        id: raw.id,
+        raw,
+        title: raw.title || "Untitled",
+        description: raw.description || "",
+        startsAt: startDate,
+        endsAt: endDate,
+        startsAtTimestamp: raw.starts_at_timestamp,
+        endsAtTimestamp: raw.ends_at_timestamp,
+        dayKey: dateKey(startDate),
+        startMinute,
+        endMinute: startMinute + durationMinutes,
+        durationMinutes,
+        timeLabel: timeFormatter.format(startDate) + " - " + timeFormatter.format(endDate),
+        stageName,
+        stageSort: raw.stage && Number.isFinite(raw.stage.id) ? raw.stage.id : 1000 + stableSortNumber(stageName),
+        trackName,
+        trackSort: raw.track && Number.isFinite(raw.track.id) ? raw.track.id : 1000 + stableSortNumber(trackName),
+        typeLabel,
+        typeKey: typeLabel,
+        typeClass: "type-" + slug(typeLabel),
+        speakers,
+        speakerNames: speakers.map((speaker) => speaker.full_name).filter(Boolean),
+        tags: Array.isArray(raw.tags) ? raw.tags.filter(Boolean) : [],
+        isWorkshop: Boolean(raw.is_workshop),
+        liveCoding: Boolean(raw.live_coding),
+        detailsUrl: DETAIL_URL_BASE + "/" + (raw.event_id || state.event.id) + "/session/" + raw.id
+      };
+    }
+
+    function getTypeLabel(raw) {
+      if (raw.is_workshop) {
+        return "Workshop";
+      }
+      return typeLabels.get(raw.session_type) || "Type " + raw.session_type;
+    }
+
+    function cleanStageName(value) {
+      const cleaned = String(value || "").replace(/^HIDE\s+/i, "").trim();
+      return cleaned || "Unassigned";
+    }
+
+    function slug(value) {
+      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+
+    function stableSortNumber(value) {
+      let total = 0;
+      for (const char of String(value)) {
+        total += char.charCodeAt(0);
+      }
+      return total;
+    }
+
+    function dateKey(date) {
+      const parts = {};
+      for (const part of datePartsFormatter.formatToParts(date)) {
+        if (part.type !== "literal") {
+          parts[part.type] = part.value;
+        }
+      }
+      return parts.year + "-" + parts.month + "-" + parts.day;
+    }
+
+    function dateFromKey(key) {
+      return new Date(key + "T12:00:00Z");
+    }
+
+    function minuteOfDay(date) {
+      const parts = {};
+      for (const part of timeFormatter.formatToParts(date)) {
+        if (part.type !== "literal") {
+          parts[part.type] = part.value;
+        }
+      }
+      const hour = Number(parts.hour === "24" ? "0" : parts.hour);
+      return hour * 60 + Number(parts.minute);
+    }
+
+    function formatMinute(minute) {
+      const normalized = ((minute % 1440) + 1440) % 1440;
+      const hour = String(Math.floor(normalized / 60)).padStart(2, "0");
+      const min = String(normalized % 60).padStart(2, "0");
+      return hour + ":" + min;
+    }
+
+    function getEventDayKeys() {
+      const keys = new Set();
+      if (Array.isArray(state.event.days)) {
+        for (const day of state.event.days) {
+          keys.add(dateKey(new Date(day)));
+        }
+      }
+      for (const session of state.sessions) {
+        keys.add(session.dayKey);
+      }
+      return [...keys].sort();
+    }
+
+    function todayKey() {
+      return dateKey(new Date());
+    }
+
+    function pickInitialDay() {
+      const today = todayKey();
+      if (state.eventDayKeys.includes(today)) {
+        return today;
+      }
+      return state.eventDayKeys[0] || today;
+    }
+
+    function sortByTime(a, b) {
+      return a.startsAtTimestamp - b.startsAtTimestamp || collator.compare(a.title, b.title);
+    }
+
+    function renderHeader() {
+      const start = new Date(state.event.starts_at);
+      const end = new Date(state.event.ends_at);
+      dom.eventRange.textContent = longDayFormatter.format(start) + " - " + longDayFormatter.format(end);
+      dom.eventStats.textContent = state.sessions.length + " agenda items";
+    }
+
+    function renderDayTabs() {
+      dom.dayTabs.replaceChildren();
+
+      const today = todayKey();
+      const todayButton = makeSegmentButton("Today", state.selectedDayKey === today, () => {
+        state.selectedDayKey = today;
+        renderDayTabs();
+        render();
+      });
+      dom.dayTabs.append(todayButton);
+
+      for (const key of state.eventDayKeys) {
+        const label = dayLabelFormatter.format(dateFromKey(key));
+        const button = makeSegmentButton(label, state.selectedDayKey === key, () => {
+          state.selectedDayKey = key;
+          renderDayTabs();
+          render();
+        });
+        dom.dayTabs.append(button);
+      }
+    }
+
+    function renderViewTabs() {
+      dom.viewTabs.replaceChildren();
+      const views = [
+        ["stage", "Stages"],
+        ["track", "Tracks"],
+        ["list", "One column"]
+      ];
+      for (const [key, label] of views) {
+        dom.viewTabs.append(makeSegmentButton(label, state.view === key, () => {
+          state.view = key;
+          renderViewTabs();
+          render();
+        }));
+      }
+    }
+
+    function makeSegmentButton(label, pressed, onClick) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.setAttribute("aria-pressed", String(pressed));
+      button.addEventListener("click", onClick);
+      return button;
+    }
+
+    function populateFilters() {
+      const typeOptions = uniqueOptions(state.sessions, "typeKey", "typeLabel", "type");
+      const stageOptions = uniqueOptions(state.sessions, "stageName", "stageName", "stage");
+      const trackOptions = uniqueOptions(state.sessions, "trackName", "trackName", "track");
+
+      setSelectOptions(dom.typeFilter, "All types", typeOptions);
+      setSelectOptions(dom.stageFilter, "All stages", stageOptions);
+      setSelectOptions(dom.trackFilter, "All tracks", trackOptions);
+      syncFilterControls();
+    }
+
+    function uniqueOptions(sessions, valueKey, labelKey, sortKind) {
+      const options = new Map();
+      for (const session of sessions) {
+        const value = session[valueKey];
+        if (!options.has(value)) {
+          const sortValue = sortKind === "stage" ? session.stageSort : sortKind === "track" ? session.trackSort : typeSort(session.typeLabel);
+          options.set(value, { value, label: session[labelKey], sortValue });
+        }
+      }
+      return [...options.values()].sort((a, b) => {
+        if (a.sortValue !== b.sortValue) {
+          return a.sortValue - b.sortValue;
+        }
+        return collator.compare(a.label, b.label);
+      });
+    }
+
+    function typeSort(typeLabel) {
+      const order = ["Talk", "Panel", "Workshop", "Lightning Talk", "Pitch", "Activity"];
+      const index = order.indexOf(typeLabel);
+      return index === -1 ? 100 : index;
+    }
+
+    function setSelectOptions(select, allLabel, options) {
+      select.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "all";
+      all.textContent = allLabel;
+      select.append(all);
+      for (const option of options) {
+        const element = document.createElement("option");
+        element.value = option.value;
+        element.textContent = option.label;
+        select.append(element);
+      }
+    }
+
+    function bindEvents() {
+      dom.typeFilter.addEventListener("change", () => {
+        state.filters.type = dom.typeFilter.value;
+        render();
+      });
+      dom.stageFilter.addEventListener("change", () => {
+        state.filters.stage = dom.stageFilter.value;
+        render();
+      });
+      dom.trackFilter.addEventListener("change", () => {
+        state.filters.track = dom.trackFilter.value;
+        render();
+      });
+      dom.favoritesOnly.addEventListener("change", () => {
+        state.filters.favoritesOnly = dom.favoritesOnly.checked;
+        render();
+      });
+      dom.resetFilters.addEventListener("click", () => {
+        state.filters.type = "all";
+        state.filters.stage = "all";
+        state.filters.track = "all";
+        state.filters.favoritesOnly = false;
+        syncFilterControls();
+        render();
+      });
+      dom.folderButton.addEventListener("click", chooseOrReconnectDirectory);
+      dom.timetable.addEventListener("click", handleTimetableClick);
+      dom.timetable.addEventListener("pointerover", handlePointerOver);
+      dom.timetable.addEventListener("pointerout", handlePointerOut);
+      dom.timetable.addEventListener("focusin", handleFocusIn);
+      dom.timetable.addEventListener("focusout", handleFocusOut);
+      window.addEventListener("scroll", hidePopover, { passive: true });
+      window.addEventListener("resize", hidePopover);
+    }
+
+    function syncFilterControls() {
+      dom.typeFilter.value = state.filters.type;
+      dom.stageFilter.value = state.filters.stage;
+      dom.trackFilter.value = state.filters.track;
+      dom.favoritesOnly.checked = state.filters.favoritesOnly;
+    }
+
+    function render() {
+      hidePopover();
+      syncFilterControls();
+      updatePreferenceUi();
+
+      const daySessions = getSessionsForSelectedDay();
+      const filteredSessions = applyFilters(daySessions);
+      const favoriteCount = state.favorites.size;
+      const selectedDateLabel = longDayFormatter.format(dateFromKey(state.selectedDayKey));
+      const todayNote = state.selectedDayKey === todayKey() ? "Today" : selectedDateLabel;
+
+      dom.summary.replaceChildren();
+      const left = document.createElement("div");
+      left.innerHTML = "<strong>" + filteredSessions.length + "</strong> of <strong>" + daySessions.length + "</strong> items shown for " + todayNote;
+      const right = document.createElement("div");
+      right.textContent = favoriteCount + " favorite" + (favoriteCount === 1 ? "" : "s");
+      dom.summary.append(left, right);
+
+      if (filteredSessions.length === 0) {
+        renderEmptyState(daySessions.length === 0 ? "No agenda items for this day." : "No agenda items match the current filters.");
+        return;
+      }
+
+      if (state.view === "list") {
+        renderListView(filteredSessions);
+      } else {
+        renderColumnView(filteredSessions, daySessions, state.view);
+      }
+    }
+
+    function getSessionsForSelectedDay() {
+      return state.sessions.filter((session) => session.dayKey === state.selectedDayKey);
+    }
+
+    function applyFilters(sessions) {
+      return sessions.filter((session) => {
+        if (state.filters.type !== "all" && session.typeKey !== state.filters.type) {
+          return false;
+        }
+        if (state.filters.stage !== "all" && session.stageName !== state.filters.stage) {
+          return false;
+        }
+        if (state.filters.track !== "all" && session.trackName !== state.filters.track) {
+          return false;
+        }
+        if (state.filters.favoritesOnly && !state.favorites.has(session.id)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function renderColumnView(filteredSessions, daySessions, view) {
+      const groupKey = view === "stage" ? "stageName" : "trackName";
+      const sortKey = view === "stage" ? "stageSort" : "trackSort";
+      const bounds = getTimelineBounds(daySessions);
+      const columns = buildColumns(filteredSessions, groupKey, sortKey);
+      const scale = buildMinuteScale(columns, bounds);
+      bounds.toPixel = scale.toPixel;
+      bounds.totalHeight = scale.totalHeight;
+      finalizeColumnPositions(columns, bounds);
+
+      const grid = document.createElement("div");
+      grid.className = "timeline-grid";
+      grid.style.setProperty("--timeline-height", bounds.totalHeight + "px");
+      grid.style.setProperty("--tick-size", ((bounds.totalHeight / bounds.duration) * TICK_MINUTES) + "px");
+      grid.style.gridTemplateColumns = "var(--rail) " + columns.map((column) => column.width + "px").join(" ");
+
+      const corner = document.createElement("div");
+      corner.className = "corner-cell";
+      corner.style.gridColumn = "1";
+      corner.style.gridRow = "1";
+      grid.append(corner);
+
+      columns.forEach((column, index) => {
+        const header = document.createElement("div");
+        header.className = "column-header";
+        header.style.gridColumn = String(index + 2);
+        header.style.gridRow = "1";
+        const title = document.createElement("span");
+        title.textContent = column.label;
+        const count = document.createElement("small");
+        count.textContent = column.sessions.length;
+        header.append(title, count);
+        grid.append(header);
+      });
+
+      const rail = document.createElement("div");
+      rail.className = "time-rail";
+      rail.style.gridColumn = "1";
+      rail.style.gridRow = "2";
+      addTimeLabels(rail, bounds);
+      grid.append(rail);
+
+      columns.forEach((column, index) => {
+        const lane = document.createElement("div");
+        lane.className = "lane";
+        lane.style.gridColumn = String(index + 2);
+        lane.style.gridRow = "2";
+        for (const layout of column.layouts) {
+          lane.append(createSessionCard(layout.session, layout, "grid", bounds));
+        }
+        grid.append(lane);
+      });
+
+      dom.timetable.replaceChildren(grid);
+    }
+
+    function buildColumns(sessions, groupKey, sortKey) {
+      const map = new Map();
+      for (const session of sessions) {
+        const key = session[groupKey];
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            label: key,
+            sortValue: session[sortKey],
+            sessions: []
+          });
+        }
+        map.get(key).sessions.push(session);
+      }
+
+      return [...map.values()].sort((a, b) => {
+        if (a.sortValue !== b.sortValue) {
+          return a.sortValue - b.sortValue;
+        }
+        return collator.compare(a.label, b.label);
+      }).map((column) => {
+        column.sessions.sort(sortByTime);
+        column.layouts = layoutColumnSessions(column.sessions);
+        column.maxLanes = column.layouts.reduce((max, layout) => Math.max(max, layout.laneCount), 1);
+        column.width = Math.max(250, Math.min(1480, column.maxLanes * 178));
+        return column;
+      });
+    }
+
+    // The timeline's minutes-to-pixels mapping is shared by every column (they
+    // all read the same time rail), so a single densely-packed column has to
+    // stretch the whole day's scale to fit its cards without clipping them —
+    // but stretching only the tight spans (not evenly) keeps empty stretches
+    // of the day compact instead of ballooning the whole page.
+    function buildMinuteScale(columns, bounds) {
+      const breakpointSet = new Set([bounds.start, bounds.end]);
+      for (const column of columns) {
+        for (const layout of column.layouts) {
+          breakpointSet.add(layout.session.startMinute);
+          if (layout.gapMinutes != null) {
+            breakpointSet.add(layout.session.startMinute + layout.gapMinutes);
+          }
+        }
+      }
+      const breakpoints = [...breakpointSet].sort((a, b) => a - b);
+      const heights = [];
+      for (let i = 0; i < breakpoints.length - 1; i++) {
+        heights.push((breakpoints[i + 1] - breakpoints[i]) * PX_PER_MINUTE);
+      }
+
+      for (let pass = 0; pass < 4; pass++) {
+        for (const column of columns) {
+          for (const layout of column.layouts) {
+            if (layout.gapMinutes == null) {
+              continue;
+            }
+            const i0 = breakpoints.indexOf(layout.session.startMinute);
+            const i1 = breakpoints.indexOf(layout.session.startMinute + layout.gapMinutes);
+            if (i0 === -1 || i1 === -1 || i1 <= i0) {
+              continue;
+            }
+            const required = visualHeight(layout.session, PX_PER_MINUTE);
+            let sum = 0;
+            for (let k = i0; k < i1; k++) {
+              sum += heights[k];
+            }
+            if (sum > 0 && sum < required) {
+              const factor = required / sum;
+              for (let k = i0; k < i1; k++) {
+                heights[k] *= factor;
+              }
+            }
+          }
+        }
+      }
+
+      const cumulative = [0];
+      for (let i = 0; i < heights.length; i++) {
+        cumulative.push(cumulative[i] + heights[i]);
+      }
+
+      function toPixel(minute) {
+        if (minute <= breakpoints[0]) {
+          return 0;
+        }
+        if (minute >= breakpoints[breakpoints.length - 1]) {
+          return cumulative[cumulative.length - 1];
+        }
+        let i = 0;
+        while (i < breakpoints.length - 2 && breakpoints[i + 1] < minute) {
+          i++;
+        }
+        const span = breakpoints[i + 1] - breakpoints[i];
+        const fraction = span > 0 ? (minute - breakpoints[i]) / span : 0;
+        return cumulative[i] + fraction * heights[i];
+      }
+
+      return { toPixel, totalHeight: cumulative[cumulative.length - 1] };
+    }
+
+    function finalizeColumnPositions(columns, bounds) {
+      for (const column of columns) {
+        for (const layout of column.layouts) {
+          layout.top = bounds.toPixel(layout.session.startMinute);
+          layout.height = visualHeight(layout.session, PX_PER_MINUTE);
+          layout.leftPercent = layout.laneIndex * 100 / layout.laneCount;
+          layout.widthPercent = 100 / layout.laneCount;
+        }
+      }
+    }
+
+    function getTimelineBounds(daySessions) {
+      if (daySessions.length === 0) {
+        return {
+          start: DEFAULT_START_MINUTE,
+          end: DEFAULT_END_MINUTE,
+          duration: DEFAULT_END_MINUTE - DEFAULT_START_MINUTE
+        };
+      }
+      const minStart = Math.min(...daySessions.map((session) => session.startMinute));
+      const maxEnd = Math.max(...daySessions.map((session) => session.endMinute));
+      const start = Math.floor(minStart / TICK_MINUTES) * TICK_MINUTES;
+      const end = Math.ceil(maxEnd / TICK_MINUTES) * TICK_MINUTES;
+      return {
+        start,
+        end,
+        duration: Math.max(TICK_MINUTES, end - start)
+      };
+    }
+
+    function addTimeLabels(rail, bounds) {
+      for (let minute = bounds.start; minute <= bounds.end; minute += TICK_MINUTES) {
+        const label = document.createElement("div");
+        label.className = "time-label";
+        label.textContent = formatMinute(minute);
+        label.style.top = bounds.toPixel(minute) + "px";
+        rail.append(label);
+      }
+    }
+
+    // Lane assignment only ever looks at real session times — never at the
+    // rendered card height — so back-to-back (non-overlapping) sessions stay
+    // in a single full-width lane. Tightness is instead resolved by growing
+    // the shared timeline scale in computeTimelineScale().
+    function layoutColumnSessions(sessions) {
+      const sorted = [...sessions].sort(sortByTime);
+      const clusters = [];
+      let cluster = [];
+      let clusterEnd = -Infinity;
+
+      for (const session of sorted) {
+        if (cluster.length === 0 || session.startMinute < clusterEnd) {
+          cluster.push(session);
+          clusterEnd = Math.max(clusterEnd, session.endMinute);
+        } else {
+          clusters.push(cluster);
+          cluster = [session];
+          clusterEnd = session.endMinute;
+        }
+      }
+
+      if (cluster.length > 0) {
+        clusters.push(cluster);
+      }
+
+      const clusterLayouts = clusters.map((members) => layoutCluster(members));
+
+      // Clusters are chronologically disjoint by construction, but their
+      // cards still share the same column visually — without this, a card
+      // with no in-cluster neighbor (gapMinutes still null) gets its full
+      // desired height with no check against the very next cluster's cards,
+      // and can bleed straight into them.
+      for (let i = 0; i < clusterLayouts.length - 1; i++) {
+        const nextStart = Math.min(...clusters[i + 1].map((session) => session.startMinute));
+        for (const layout of clusterLayouts[i]) {
+          if (layout.gapMinutes == null) {
+            layout.gapMinutes = Math.max(1, nextStart - layout.session.startMinute);
+          }
+        }
+      }
+
+      return clusterLayouts.flat();
+    }
+
+    function layoutCluster(cluster) {
+      const laneEnds = [];
+      const laneMembers = [];
+      const layouts = [];
+      const sorted = [...cluster].sort(sortByTime);
+
+      for (const session of sorted) {
+        let laneIndex = laneEnds.findIndex((end) => end <= session.startMinute);
+        if (laneIndex === -1) {
+          laneIndex = laneEnds.length;
+          laneMembers[laneIndex] = [];
+        }
+        laneEnds[laneIndex] = session.endMinute;
+        const layout = { session, laneIndex, laneCount: 1, gapMinutes: null };
+        laneMembers[laneIndex].push(layout);
+        layouts.push(layout);
+      }
+
+      for (const members of laneMembers) {
+        for (let index = 0; index < members.length; index++) {
+          const next = members[index + 1];
+          members[index].gapMinutes = next ? Math.max(1, next.session.startMinute - members[index].session.startMinute) : null;
+        }
+      }
+
+      const laneCount = Math.max(1, laneEnds.length);
+      for (const layout of layouts) {
+        layout.laneCount = laneCount;
+      }
+      return layouts;
+    }
+
+    function minCardHeight() {
+      // Every card needs room for time+star, title, meta, and the footer
+      // (type chip + details link) — even 10-minute lightning talks.
+      return 104;
+    }
+
+    function visualHeight(session, pxPerMinute) {
+      return Math.max(minCardHeight(session), session.durationMinutes * pxPerMinute - 5);
+    }
+
+    function renderListView(sessions) {
+      const list = document.createElement("div");
+      list.className = "list-view";
+      const groups = new Map();
+
+      for (const session of sessions) {
+        if (!groups.has(session.timeLabel)) {
+          groups.set(session.timeLabel, []);
+        }
+        groups.get(session.timeLabel).push(session);
+      }
+
+      for (const [time, groupSessions] of groups) {
+        const row = document.createElement("section");
+        row.className = "list-row";
+        const timeCell = document.createElement("div");
+        timeCell.className = "list-time";
+        timeCell.textContent = time.split(" - ")[0];
+        const stack = document.createElement("div");
+        stack.className = "list-stack";
+        for (const session of groupSessions.sort(sortByTime)) {
+          stack.append(createSessionCard(session, null, "list"));
+        }
+        row.append(timeCell, stack);
+        list.append(row);
+      }
+
+      dom.timetable.replaceChildren(list);
+    }
+
+    function createSessionCard(session, layout, mode, bounds) {
+      const article = document.createElement("article");
+      article.className = "session-card " + session.typeClass + (session.durationMinutes <= 10 ? " micro" : "") + (state.favorites.has(session.id) ? " favorite" : "");
+      article.dataset.sessionId = String(session.id);
+
+      if (mode === "grid" && layout && bounds) {
+        article.style.top = layout.top + "px";
+        article.style.height = layout.height + "px";
+        article.style.left = "calc(" + layout.leftPercent + "% + 4px)";
+        article.style.width = "calc(" + layout.widthPercent + "% - 8px)";
+      }
+
+      const top = document.createElement("div");
+      top.className = "card-top";
+      const time = document.createElement("div");
+      time.className = "time-range";
+      time.textContent = session.timeLabel;
+      const favorite = document.createElement("button");
+      favorite.type = "button";
+      favorite.className = "favorite-button";
+      favorite.dataset.favoriteId = String(session.id);
+      favorite.setAttribute("aria-pressed", String(state.favorites.has(session.id)));
+      favorite.setAttribute("aria-label", (state.favorites.has(session.id) ? "Remove favorite: " : "Add favorite: ") + session.title);
+      favorite.title = state.favorites.has(session.id) ? "Remove favorite" : "Add favorite";
+      favorite.textContent = state.favorites.has(session.id) ? "★" : "☆";
+      top.append(time, favorite);
+
+      const title = document.createElement("h3");
+      title.className = "session-title";
+      title.textContent = session.title;
+
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
+      meta.textContent = mode === "list"
+        ? session.stageName + " · " + session.trackName + speakerSuffix(session)
+        : speakerSuffix(session).replace(/^ · /, "") || session.trackName;
+
+      const footer = document.createElement("div");
+      footer.className = "card-footer";
+      const type = document.createElement("span");
+      type.className = "type-chip";
+      type.textContent = session.typeLabel;
+      const details = document.createElement("a");
+      details.className = "details-link";
+      details.href = session.detailsUrl;
+      details.target = "_blank";
+      details.rel = "noreferrer";
+      details.textContent = "Details";
+      footer.append(type, details);
+
+      article.append(top, title, meta, footer);
+      return article;
+    }
+
+    function speakerSuffix(session) {
+      if (session.speakerNames.length === 0) {
+        return "";
+      }
+      const names = session.speakerNames.slice(0, 3).join(", ");
+      const more = session.speakerNames.length > 3 ? " +" + (session.speakerNames.length - 3) : "";
+      return " · " + names + more;
+    }
+
+    function renderEmptyState(message) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      const title = document.createElement("strong");
+      title.textContent = message;
+      const detail = document.createElement("span");
+      detail.textContent = longDayFormatter.format(dateFromKey(state.selectedDayKey));
+      empty.append(title, detail);
+      dom.timetable.replaceChildren(empty);
+    }
+
+    function showLoadError(error) {
+      dom.summary.textContent = "";
+      const box = document.createElement("div");
+      box.className = "load-error";
+      const title = document.createElement("strong");
+      title.textContent = "Could not load 16.json.";
+      const detail = document.createElement("span");
+      detail.textContent = error.message;
+      box.append(title, detail);
+      dom.timetable.replaceChildren(box);
+    }
+
+    function handleTimetableClick(event) {
+      const button = event.target.closest("[data-favorite-id]");
+      if (!button) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      toggleFavorite(Number(button.dataset.favoriteId));
+    }
+
+    function toggleFavorite(sessionId) {
+      if (state.favorites.has(sessionId)) {
+        state.favorites.delete(sessionId);
+      } else {
+        state.favorites.add(sessionId);
+      }
+      state.dirtyFavorites = true;
+      schedulePreferenceSave();
+      render();
+    }
+
+    function isDesktopHover() {
+      return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    }
+
+    function handlePointerOver(event) {
+      if (!isDesktopHover()) {
+        return;
+      }
+      const card = event.target.closest(".session-card");
+      if (!card || card === state.hoverCard) {
+        return;
+      }
+      showPopoverForCard(card);
+    }
+
+    function handlePointerOut(event) {
+      const card = event.target.closest(".session-card");
+      if (!card || card.contains(event.relatedTarget)) {
+        return;
+      }
+      hidePopover();
+    }
+
+    function handleFocusIn(event) {
+      if (!isDesktopHover()) {
+        return;
+      }
+      const card = event.target.closest(".session-card");
+      if (card) {
+        showPopoverForCard(card);
+      }
+    }
+
+    function handleFocusOut(event) {
+      const card = event.target.closest(".session-card");
+      if (!card || card.contains(event.relatedTarget)) {
+        return;
+      }
+      hidePopover();
+    }
+
+    function showPopoverForCard(card) {
+      const session = state.sessionById.get(Number(card.dataset.sessionId));
+      if (!session) {
+        return;
+      }
+      state.hoverCard = card;
+      renderPopoverContent(session);
+      positionPopover(card);
+    }
+
+    function renderPopoverContent(session) {
+      dom.detailPopover.replaceChildren();
+      const title = document.createElement("h2");
+      title.textContent = session.title;
+
+      const time = detailLine(session.timeLabel + " · " + session.typeLabel);
+      const place = detailLine(session.stageName + " · " + session.trackName);
+      const speakers = detailLine(session.speakerNames.length > 0 ? session.speakerNames.join(", ") : "No speakers listed");
+
+      const description = document.createElement("p");
+      description.className = "description";
+      description.textContent = session.description.trim() || "No description provided.";
+
+      dom.detailPopover.append(title, time, place, speakers, description);
+
+      if (session.tags.length > 0 || session.liveCoding) {
+        const tags = document.createElement("div");
+        tags.className = "tag-list";
+        const values = session.liveCoding ? ["Live coding", ...session.tags] : session.tags;
+        for (const tag of values.slice(0, 14)) {
+          const item = document.createElement("span");
+          item.textContent = tag;
+          tags.append(item);
+        }
+        dom.detailPopover.append(tags);
+      }
+    }
+
+    function detailLine(text) {
+      const line = document.createElement("p");
+      line.className = "detail-line";
+      line.textContent = text;
+      return line;
+    }
+
+    function positionPopover(card) {
+      dom.detailPopover.style.display = "block";
+      dom.detailPopover.style.visibility = "hidden";
+      const rect = card.getBoundingClientRect();
+      const popoverRect = dom.detailPopover.getBoundingClientRect();
+      const margin = 12;
+
+      let left = rect.right + margin;
+      if (left + popoverRect.width > window.innerWidth - margin) {
+        left = rect.left - popoverRect.width - margin;
+      }
+      if (left < margin) {
+        left = margin;
+      }
+
+      let top = rect.top;
+      if (top + popoverRect.height > window.innerHeight - margin) {
+        top = window.innerHeight - popoverRect.height - margin;
+      }
+      if (top < margin) {
+        top = margin;
+      }
+
+      dom.detailPopover.style.left = left + "px";
+      dom.detailPopover.style.top = top + "px";
+      dom.detailPopover.style.visibility = "visible";
+    }
+
+    function hidePopover() {
+      state.hoverCard = null;
+      dom.detailPopover.style.display = "none";
+    }
+
+    async function chooseOrReconnectDirectory() {
+      if (!("showDirectoryPicker" in window)) {
+        state.saveMessage = "Folder picker unavailable in this browser";
+        updatePreferenceUi();
+        return;
+      }
+
+      try {
+        if (state.directoryHandle && !state.fileHandle) {
+          const connected = await connectDirectory(state.directoryHandle, true);
+          if (connected) {
+            await storeDirectoryHandle(state.directoryHandle);
+            updatePreferenceUi();
+            render();
+            return;
+          }
+        }
+
+        const directoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        const connected = await connectDirectory(directoryHandle, true);
+        if (connected) {
+          await storeDirectoryHandle(directoryHandle);
+          render();
+        }
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          return;
+        }
+        state.saveMessage = "Folder connection failed: " + error.message;
+        updatePreferenceUi();
+      }
+    }
+
+    async function connectDirectory(directoryHandle, requestPermission) {
+      const allowed = await verifyPermission(directoryHandle, requestPermission);
+      if (!allowed) {
+        state.directoryHandle = directoryHandle;
+        state.fileHandle = null;
+        state.saveMessage = "Folder permission needed";
+        return false;
+      }
+
+      state.directoryHandle = directoryHandle;
+      state.fileHandle = await directoryHandle.getFileHandle(PREFS_FILE_NAME, { create: true });
+      const loadedFavorites = await readFavoritesFromFile(state.fileHandle);
+      const before = state.favorites.size;
+      for (const favorite of loadedFavorites) {
+        if (state.sessionById.has(favorite)) {
+          state.favorites.add(favorite);
+        }
+      }
+      state.dirtyFavorites = state.dirtyFavorites || state.favorites.size !== before || loadedFavorites.length === 0;
+      state.saveMessage = "Connected to " + PREFS_FILE_NAME;
+      if (state.dirtyFavorites) {
+        await savePreferencesNow();
+      }
+      return true;
+    }
+
+    async function verifyPermission(directoryHandle, requestPermission) {
+      const options = { mode: "readwrite" };
+      if (await directoryHandle.queryPermission(options) === "granted") {
+        return true;
+      }
+      if (requestPermission && await directoryHandle.requestPermission(options) === "granted") {
+        return true;
+      }
+      return false;
+    }
+
+    async function readFavoritesFromFile(fileHandle) {
+      const file = await fileHandle.getFile();
+      if (file.size === 0) {
+        return [];
+      }
+      const text = await file.text();
+      if (!text.trim()) {
+        return [];
+      }
+      const parsed = JSON.parse(text);
+      return Array.isArray(parsed.favorites) ? parsed.favorites.map(Number).filter(Number.isFinite) : [];
+    }
+
+    function schedulePreferenceSave() {
+      if (!state.fileHandle) {
+        state.saveMessage = "Choose folder to save favorites";
+        updatePreferenceUi();
+        return;
+      }
+      state.saveMessage = "Saving favorites";
+      updatePreferenceUi();
+      window.clearTimeout(state.saveTimer);
+      state.saveTimer = window.setTimeout(() => {
+        savePreferencesNow().catch((error) => {
+          state.saveMessage = "Save failed: " + error.message;
+          updatePreferenceUi();
+        });
+      }, 180);
+    }
+
+    async function savePreferencesNow() {
+      if (!state.fileHandle) {
+        return;
+      }
+      const payload = {
+        version: 1,
+        eventId: state.event.id,
+        eventName: state.event.name,
+        updatedAt: new Date().toISOString(),
+        favorites: [...state.favorites].sort((a, b) => a - b)
+      };
+      const writable = await state.fileHandle.createWritable();
+      await writable.write(JSON.stringify(payload, null, 2) + "\n");
+      await writable.close();
+      state.dirtyFavorites = false;
+      state.saveMessage = "Saved to " + PREFS_FILE_NAME;
+      updatePreferenceUi();
+    }
+
+    async function restoreStoredDirectory() {
+      if (!("showDirectoryPicker" in window) || !("indexedDB" in window)) {
+        state.saveMessage = "Folder picker unavailable in this browser";
+        return;
+      }
+      try {
+        const directoryHandle = await readStoredDirectoryHandle();
+        if (!directoryHandle) {
+          return;
+        }
+        state.directoryHandle = directoryHandle;
+        const connected = await connectDirectory(directoryHandle, false);
+        if (!connected) {
+          state.saveMessage = "Reconnect folder to load favorites";
+        }
+      } catch (error) {
+        state.saveMessage = "Stored folder unavailable";
+      }
+    }
+
+    function updatePreferenceUi() {
+      dom.preferenceStatus.textContent = state.saveMessage;
+      if (!("showDirectoryPicker" in window)) {
+        dom.folderButton.textContent = "Folder unavailable";
+        dom.folderButton.disabled = true;
+      } else if (state.fileHandle) {
+        dom.folderButton.textContent = "Change folder";
+        dom.folderButton.disabled = false;
+      } else if (state.directoryHandle) {
+        dom.folderButton.textContent = "Reconnect folder";
+        dom.folderButton.disabled = false;
+      } else {
+        dom.folderButton.textContent = "Choose folder";
+        dom.folderButton.disabled = false;
+      }
+    }
+
+    function openHandleDatabase() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("wad2026-file-handles", 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore("handles");
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function storeDirectoryHandle(directoryHandle) {
+      if (!("indexedDB" in window)) {
+        return;
+      }
+      const db = await openHandleDatabase();
+      await transactionPromise(db, "readwrite", (store) => store.put(directoryHandle, "preferencesDirectory"));
+      db.close();
+    }
+
+    async function readStoredDirectoryHandle() {
+      const db = await openHandleDatabase();
+      const result = await transactionPromise(db, "readonly", (store) => store.get("preferencesDirectory"));
+      db.close();
+      return result;
+    }
+
+    function transactionPromise(db, mode, operation) {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction("handles", mode);
+        const store = transaction.objectStore("handles");
+        const request = operation(store);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+        transaction.onerror = () => reject(transaction.error);
+      });
+    }
+  </script>
+</body>
+</html>
